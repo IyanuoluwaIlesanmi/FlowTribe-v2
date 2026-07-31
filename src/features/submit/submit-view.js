@@ -127,7 +127,15 @@ function FormState(root) {
  * ---------------------------------------------------------------------- */
 
 function SuccessState(root, result) {
-  const { week } = result.stats;
+  // `submission.create` returns stats FLAT — postsThisWeek, weeklyGoal, goalMet.
+  // There is no `stats.week`. Reading one threw a TypeError on every successful
+  // post, which submit()'s catch then showed as "We couldn't reach Flow Tribe"
+  // on a post that was already in the ledger.
+  //
+  // `stats` is absent entirely when the server sets statsSettling — the ledger
+  // was written but a rollup step failed. Phase 10 M2 gives that its own copy;
+  // the guard here is what stops it being a crash.
+  const stats = result.stats || null;
 
   return el('div', { class: 'ft-submit-success' }, [
     el('div', { class: 'ft-submit-success__burst' }, SuccessBurst({ label: 'Post logged' })),
@@ -137,17 +145,21 @@ function SuccessState(root, result) {
       text: "Today's post has been logged.",
     }),
 
-    Card({}, [
-      el('div', { class: 'ft-week-panel' }, [
-        ProgressRing({ value: week.postsThisWeek, goal: week.weeklyGoal }),
-        el('p', {
-          class: week.goalMet ? 'ft-week-panel__message ft-week-panel__message--met' : 'ft-week-panel__message',
-          text: week.goalMet
-            ? 'You kept your promise to yourself this week.'
-            : weeklyProgressMessage(week.postsThisWeek, week.weeklyGoal),
-        }),
-      ]),
-    ]),
+    stats
+      ? Card({}, [
+          el('div', { class: 'ft-week-panel' }, [
+            ProgressRing({ value: stats.postsThisWeek, goal: stats.weeklyGoal }),
+            el('p', {
+              class: stats.goalMet
+                ? 'ft-week-panel__message ft-week-panel__message--met'
+                : 'ft-week-panel__message',
+              text: stats.goalMet
+                ? 'You kept your promise to yourself this week.'
+                : weeklyProgressMessage(stats.postsThisWeek, stats.weeklyGoal),
+            }),
+          ]),
+        ])
+      : null,
 
     el('div', { class: 'ft-stack ft-gap-3 ft-mt-6' }, [
       Button({

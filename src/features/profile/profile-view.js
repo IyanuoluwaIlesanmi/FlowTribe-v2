@@ -57,7 +57,10 @@ export default function ProfileView() {
 function render(data) {
   const { member, stats, calendar, milestones, level, joinDate } = data;
   const platform = getPlatform(member.platform);
-  const earned = milestones.milestones.filter((m) => m.unlocked);
+  // `member.profile` returns { totalEarned, totalAvailable, recent } — `recent`
+  // is already the earned list, newest first. There is no `milestones.milestones`;
+  // reading one crashed this screen on every load until Phase 10.
+  const earned = milestones.recent || [];
 
   return el('div', { class: 'ft-stack ft-gap-6' }, [
     /* Identity */
