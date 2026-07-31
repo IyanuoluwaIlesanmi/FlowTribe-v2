@@ -189,7 +189,7 @@ FlowTribe-v2/
 │
 ├── tests/
 │   ├── backend.html             Harness — open in a browser
-│   ├── backend-suite.js         96 checks across 13 groups. Loaded as a
+│   ├── backend-suite.js         97 checks across 13 groups. Loaded as a
 │   │                            MODULE so it can import the real icon set
 │   ├── index.html / suite.js    Earlier pure-business-logic suite, kept as
 │   │                            reference. backend.html is the gate
@@ -932,7 +932,7 @@ ES modules are subject to CORS — **`file://` will not work**.
 
 # Testing Strategy
 
-**96 automated checks across 13 groups.** Open `tests/backend.html`.
+**97 automated checks across 13 groups.** Open `tests/backend.html`.
 
 ## How it works
 

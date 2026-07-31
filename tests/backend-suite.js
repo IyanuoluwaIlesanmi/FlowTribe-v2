@@ -1011,6 +1011,35 @@ import { Icons } from '../src/lib/icons.js';
     });
   });
 
+  it('the Profile screen can change a display name and revoke consent', function () {
+    // Both endpoints shipped in Phase 5a with no caller. member.profile is
+    // what the screen reads, so the round trip has to be visible THERE — a
+    // write that succeeds but does not show up on reload is the failure mode
+    // worth catching.
+    var env = freshInstall();
+
+    var before = ok('member.profile', {}, env.member.token);
+    equal(before.member.fullName, 'Test Member');
+    equal(before.member.consentFeature, true, 'registered with consent granted');
+
+    ok('member.updateName', { fullName: 'Test Renamed' }, env.member.token);
+    ok('member.updateConsent', { consentFeature: false }, env.member.token);
+
+    var after = ok('member.profile', {}, env.member.token);
+    equal(after.member.fullName, 'Test Renamed', 'the new name is what the screen reloads');
+    equal(after.member.consentFeature, false, 'consent is revocable, not write-once');
+
+    // Consent gates shoutouts, so revoking it must actually reach the sheet
+    // rather than only the cached response.
+    var stored = MemberRepo.findById(before.member.memberId);
+    equal(stored.consentFeature, false, 'revocation reached the sheet');
+    equal(stored.fullName, 'Test Renamed');
+
+    // And it goes back on again.
+    ok('member.updateConsent', { consentFeature: true }, env.member.token);
+    equal(ok('member.profile', {}, env.member.token).member.consentFeature, true);
+  });
+
   it('every catalog and level IconID resolves to a real icon', function () {
     var env = freshInstall();
 

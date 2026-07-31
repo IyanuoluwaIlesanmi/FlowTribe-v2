@@ -324,8 +324,8 @@ it costs 10 KB and is fetched only on demand.
 
 ### The test that catches a mistake
 
-`tests/backend.html` — **96 checks, 13 groups.** Visual work must leave it at
-**96/96**. If a "visual" change breaks a test, it was not a visual change.
+`tests/backend.html` — **97 checks, 13 groups.** Visual work must leave it at
+**97/97**. If a "visual" change breaks a test, it was not a visual change.
 
 The 95th was added during Phase 8: it asserts that every `IconID` in the
 milestone catalog and the Flow Levels sheet resolves to a real icon. Icon

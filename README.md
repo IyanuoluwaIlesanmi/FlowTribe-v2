@@ -5,7 +5,7 @@ Telegram community for creators and solopreneurs.
 
 > **Status: Phases 1–8 complete. Not yet deployed.**
 > Feature complete for v1 — 10 member screens, 9 admin screens, 38 backend actions —
-> and the approved visual design has been applied. **96/96** automated checks passing.
+> and the approved visual design has been applied. **97/97** automated checks passing.
 > The one blocking item is the live deployment: see [`docs/deployment.md`](docs/deployment.md).
 
 ## Running it locally
@@ -25,7 +25,7 @@ powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 
 The gallery renders every token and component on one page — it is the fastest way to see
 the design system. The verification page runs the whole backend against an in-memory fake
-of Google's APIs in about ten seconds; it must read **96/96** before and after any change.
+of Google's APIs in about ten seconds; it must read **97/97** before and after any change.
 
 > The gallery does **not** load `styles/components-admin.css`. Admin-only layout has to
 > be checked on `admin.html`.
@@ -81,7 +81,7 @@ FlowTribe-v2/
 ├── styles/        12 stylesheets — tokens.css is the single source of visual truth
 ├── scripts/       serve.ps1, the local static dev server
 ├── appsscript/    Google Apps Script backend (the real source of truth, not doc snippets)
-└── tests/         backend.html — 96 checks against in-memory Google fakes
+└── tests/         backend.html — 97 checks against in-memory Google fakes
 ```
 
 ## Docs
