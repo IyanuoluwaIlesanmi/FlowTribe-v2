@@ -6,10 +6,10 @@
 > The three `.docx` files = source of truth for **visual design only**.
 > Conflicts are resolved there and **closed**.
 
-**As of the end of Phase 7.** Feature complete for v1, fully verified against
+**As of the end of Phase 9 M2.** Feature complete for v1, fully verified against
 an in-memory harness, **not yet deployed**.
 
-`95/95` automated checks passing. Open `tests/backend.html` to re-run them.
+`96/96` automated checks passing. Open `tests/backend.html` to re-run them.
 
 ---
 
@@ -67,7 +67,7 @@ revoke) · Settings (Super Admin) · Audit log (Super Admin)
 
 Navigation is filtered by capability — a Community Manager sees 6 items, not 8.
 
-## Backend (20 files, 7,600 lines, 39 actions)
+## Backend (20 files, 7,600 lines, 38 actions)
 
 6 pure libraries · 14 repositories · 15 services · 4 orchestrators + `Pipeline`
 · 5 middleware · 6 controllers · 6 scheduled jobs · 6 setup functions
@@ -87,7 +87,7 @@ idempotency by `requestId` · `LockService` on every derived-state write ·
 
 ## Verification and tooling
 
-95 checks across 13 groups · in-memory Google fakes with real SHA-256 ·
+96 checks across 13 groups · in-memory Google fakes with real SHA-256 ·
 `setupSmokeTest()` (27 checks against a real spreadsheet, self-cleaning) ·
 `scripts/serve.ps1` · 20 documents
 
@@ -257,7 +257,7 @@ deployed, any further icon change is a manual spreadsheet edit.
 ```
 1. Read FINAL_PRODUCT_DECISIONS.md FIRST — it governs everything
 2. Read PROJECT_OVERVIEW.md, ENGINEERING.md, this file, and the three .docx files
-3. Open tests/backend.html — confirm 95/95 before changing anything
+3. Open tests/backend.html — confirm 96/96 before changing anything
 4. Deploy per deployment.md
 5. Run setupSmokeTest() on the live project
 6. Work production-checklist.md
@@ -284,7 +284,7 @@ Check `gallery.html` after each change — it renders every primitive on one
 page. It does **not** load `components-admin.css`; admin layout has to be
 checked on `admin.html`.
 
-**Re-run `tests/backend.html`: it must still be 95/95.**
+**Re-run `tests/backend.html`: it must still be 96/96.**
 
 ## If starting the Brand & Content Pass
 

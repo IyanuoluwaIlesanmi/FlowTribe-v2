@@ -189,7 +189,7 @@ FlowTribe-v2/
 │
 ├── tests/
 │   ├── backend.html             Harness — open in a browser
-│   ├── backend-suite.js         95 checks across 13 groups. Loaded as a
+│   ├── backend-suite.js         96 checks across 13 groups. Loaded as a
 │   │                            MODULE so it can import the real icon set
 │   ├── index.html / suite.js    Earlier pure-business-logic suite, kept as
 │   │                            reference. backend.html is the gate
@@ -657,7 +657,7 @@ evaluator IDs in both directions.
 
 # API Endpoints
 
-**39 actions.** One `doPost`. Full spec in [`api.md`](api.md).
+**38 actions.** One `doPost`. Full spec in [`api.md`](api.md).
 
 ## Public (exactly 4 — a fifth should require an argument)
 
@@ -755,7 +755,6 @@ Apps Script has no `.env`. Configuration lives in **Script Properties**.
 | `FT_SESSION_KEY` | setup, automatically | Changing it logs everyone out |
 | `FT_ADMIN_FULLNAME` / `_USERNAME` / `_PLATFORM` | operator | Founder account |
 | `FT_ADMIN_PIN` | operator → **auto-deleted after use** | Founder's first PIN |
-| `FT_SPREADSHEET_ID` | optional | Point at a specific sheet (staging) |
 | `FT_RECONCILE_CURSOR` | job, automatically | Resume point for a partial reconcile |
 
 ## Front-end configuration
@@ -909,7 +908,7 @@ Full walkthrough in [`deployment.md`](deployment.md); pre-launch verification in
 2. Extensions ▸ Apps Script → paste 20 files (order matters) → replace manifest
 3. Script Properties: FT_ADMIN_FULLNAME / _USERNAME / _PIN / _PLATFORM
 4. Run setupAll()  → secrets, 14 sheets, catalog, admin, triggers, verify
-   Expect: "OK — 14 sheets, 39 actions, secrets set, Super Admin present."
+   Expect: "OK — 14 sheets, 38 actions, secrets set, Super Admin present."
 5. Deploy ▸ New deployment ▸ Web app · Execute as Me · Access ANYONE
 6. Run setupSmokeTest()  → expect "ALL 27 CHECKS PASSED"
 7. config.js ← the /exec URL, then drag the folder to Netlify
@@ -933,7 +932,7 @@ ES modules are subject to CORS — **`file://` will not work**.
 
 # Testing Strategy
 
-**95 automated checks across 13 groups.** Open `tests/backend.html`.
+**96 automated checks across 13 groups.** Open `tests/backend.html`.
 
 ## How it works
 

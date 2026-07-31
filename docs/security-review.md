@@ -133,6 +133,17 @@ It is a checklist item, not a code path.
 The narrow OAuth scope (`spreadsheets.currentonly`) means the script can touch
 the bound spreadsheet and nothing else in the account.
 
+**That scope is load-bearing, and was defended in Phase 9.** `SheetClient`
+carried an `FT_SPREADSHEET_ID` property that called `SpreadsheetApp.openById()`
+so a staging deployment could point elsewhere. It could never have worked —
+`currentonly` refuses `openById` on any other file — and the only way to make
+it work was to widen the scope to full `spreadsheets`. That would have granted
+a web app deployed as the owner and reachable by `ANYONE_ANONYMOUS` read and
+write access to **every spreadsheet in the founder's Drive**.
+
+The override was removed instead. Staging is a copy of the spreadsheet with its
+own bound script: one extra step, no permission cost.
+
 ---
 
 ## 5. Input sanitisation

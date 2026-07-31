@@ -127,7 +127,6 @@ script property**, four times:
 | `FT_ADMIN_PLATFORM` | you | Founder's platform |
 | `FT_PIN_PEPPER` | **setup, automatically** | Secret that makes leaked PIN hashes useless. **Never change or delete this** |
 | `FT_SESSION_KEY` | **setup, automatically** | Session signing secret |
-| `FT_SPREADSHEET_ID` | optional | Only if the script is not bound to the sheet |
 
 ---
 
@@ -162,7 +161,7 @@ Google's standard notice for anything not published to their marketplace.
 Open **Execution log** (bottom of the editor). The last line should start:
 
 ```
-OK — 14 sheets, 39 actions, secrets set, Super Admin present.
+OK — 14 sheets, 38 actions, secrets set, Super Admin present.
 ```
 
 Anything starting `FAILED` lists exactly what is wrong and what to run.
@@ -276,7 +275,7 @@ For front-end changes, drag the folder onto Netlify again.
 |---|---|---|
 | Google error page instead of JSON | Access is not "Anyone" | Redo Part 5 step 3 |
 | `Cannot read properties of null` during setup | Script is not attached to a spreadsheet | Open it via **Extensions ▸ Apps Script** *from the sheet* |
-| `No spreadsheet` in the log | Same as above | Or set `FT_SPREADSHEET_ID` |
+| `No spreadsheet` in the log | Same as above | The script must be bound. There is no override - see below |
 | `Missing sheet "Members"` | A tab was deleted | Run `setupBootstrap()` |
 | `setupVerify` says a global is missing | A file was not pasted, or misnamed | Check the table in Part 2a |
 | `setupVerify` says a milestone has no evaluator | A catalog ID does not match the code | Fix the ID in the `MilestoneCatalog` tab |

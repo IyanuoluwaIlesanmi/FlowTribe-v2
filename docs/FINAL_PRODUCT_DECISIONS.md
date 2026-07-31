@@ -53,7 +53,7 @@ them**, even if a design document describes something different.
 | 8 | **All business rules** — see `PROJECT_OVERVIEW.md` §Business Rules |
 | 9 | **Database schema** — all 14 sheets, every column |
 | 10 | **Google Apps Script architecture** — layering, orchestrators, pipeline |
-| 11 | **API contracts** — all 39 actions, envelope, error codes |
+| 11 | **API contracts** — all 38 actions, envelope, error codes |
 | 12 | **Backend logic** — services, repositories, jobs, reconciliation |
 | 13 | **Frontend behaviour** — data flow, state, loading, error handling |
 | 14 | **Navigation flow** — routes, guards, information architecture |
@@ -324,8 +324,8 @@ it costs 10 KB and is fetched only on demand.
 
 ### The test that catches a mistake
 
-`tests/backend.html` — **95 checks, 13 groups.** Visual work must leave it at
-**95/95**. If a "visual" change breaks a test, it was not a visual change.
+`tests/backend.html` — **96 checks, 13 groups.** Visual work must leave it at
+**96/96**. If a "visual" change breaks a test, it was not a visual change.
 
 The 95th was added during Phase 8: it asserts that every `IconID` in the
 milestone catalog and the Flow Levels sheet resolves to a real icon. Icon

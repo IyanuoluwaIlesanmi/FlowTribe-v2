@@ -20,13 +20,24 @@ var SheetClient = (function () {
   var cachedBook = null;
 
   /**
-   * The spreadsheet this script reads and writes.
+   * The spreadsheet this script reads and writes: always the bound one.
    *
-   * Normally the bound spreadsheet — the script lives inside it, so there is
-   * nothing to configure. `FT_SPREADSHEET_ID` overrides that, which makes two
-   * things possible without a code change: pointing a standalone script at a
-   * spreadsheet, and running a staging deployment against a copy before
-   * touching live member data.
+   * ── WHY THERE IS NO FT_SPREADSHEET_ID OVERRIDE ────────────────────────────
+   * There used to be. It called `SpreadsheetApp.openById()` so a standalone
+   * script, or a staging deployment, could point at a different spreadsheet.
+   *
+   * It could never have worked. The manifest declares
+   * `spreadsheets.currentonly`, which grants access to the bound spreadsheet
+   * and nothing else — `openById` on any other file fails with a permission
+   * error at runtime. The only way to make the override function is to widen
+   * the scope to full `spreadsheets`, which would grant this web app — a
+   * deployment running as the owner and reachable by ANYONE_ANONYMOUS —
+   * read and write access to every spreadsheet in the founder's Drive.
+   *
+   * That is a large amount of blast radius for a staging convenience, so the
+   * override was removed rather than the scope widened. Staging is a copy of
+   * the spreadsheet with its own bound script, which is one extra step and
+   * carries no permission cost at all.
    *
    * @returns {GoogleAppsScript.Spreadsheet.Spreadsheet}
    * @throws {AppError} when no spreadsheet can be reached
@@ -34,21 +45,11 @@ var SheetClient = (function () {
   function book() {
     if (cachedBook) return cachedBook;
 
-    var override = null;
     try {
-      override = PropertiesService.getScriptProperties().getProperty('FT_SPREADSHEET_ID');
-    } catch (error) {
-      // Properties are unavailable in some contexts; fall through to bound.
-    }
-
-    try {
-      cachedBook = override
-        ? SpreadsheetApp.openById(override)
-        : SpreadsheetApp.getActiveSpreadsheet();
+      cachedBook = SpreadsheetApp.getActiveSpreadsheet();
     } catch (error) {
       throw new AppError('SERVER_ERROR', ERROR_MESSAGES.SERVER_ERROR, {
-        internal: 'Cannot open spreadsheet' + (override ? ' ' + override : ' (bound)') +
-          ': ' + error.message,
+        internal: 'Cannot open the bound spreadsheet: ' + error.message,
       });
     }
 
@@ -57,9 +58,9 @@ var SheetClient = (function () {
       // spreadsheet. Named explicitly so the log says what to do.
       throw new AppError('SERVER_ERROR', ERROR_MESSAGES.SERVER_ERROR, {
         internal:
-          'No spreadsheet. Either bind this script to a sheet ' +
-          '(Extensions > Apps Script from the sheet), or set the ' +
-          'FT_SPREADSHEET_ID script property.',
+          'No spreadsheet. This script must be bound to one: open the ' +
+          'spreadsheet and use Extensions > Apps Script, rather than ' +
+          'creating a standalone script.',
       });
     }
 

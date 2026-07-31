@@ -97,7 +97,7 @@ database** — there is no migration; everyone registers fresh.
 | Free-text name as identity | `MemberID` key · unique username · duplicable display name |
 | 4-digit PIN in a spreadsheet column, sent in a URL | 6-digit PIN, salted + peppered hash, POST only |
 | `mode:'no-cors'` — success shown even on failure | Real responses; a failed write is reported as failed |
-| No auth, no tests, dashboards capped at 30 members | Sessions, capabilities, 95 automated checks, no cap |
+| No auth, no tests, dashboards capped at 30 members | Sessions, capabilities, 96 automated checks, no cap |
 
 ---
 
@@ -378,7 +378,7 @@ burst; weeks alone rewards the calendar passing.
 | N4 | Submission under 3s | ⚠️ needs live measurement |
 | N5 | WCAG AA, keyboard navigable | ✅ built in |
 | N6 | No plain-text PINs anywhere | ✅ |
-| N7 | Server-side authorisation on every action | ✅ 95 checks |
+| N7 | Server-side authorisation on every action | ✅ 96 checks |
 | N8 | Operator can fix data without a developer | ✅ |
 | N9 | Every derived value rebuildable from the ledger | ✅ |
 | N10 | No build step | ✅ |
@@ -411,7 +411,7 @@ consistency.
 ## Shipped — v1.0
 
 Phases 1–8 complete. Design system, member app, admin dashboard, backend,
-deployment tooling, and the approved visual design. 95 automated checks
+deployment tooling, and the approved visual design. 96 automated checks
 passing.
 
 ## Next — launch
@@ -441,8 +441,8 @@ Telegram bot, member-to-member social features.
 | Design system | ✅ Complete — approved visual design applied (Phase 8) |
 | Member app (10 screens) | ✅ Complete |
 | Admin dashboard (9 screens) | ✅ Complete |
-| Backend (39 actions) | ✅ Complete |
-| Automated verification | ✅ 95/95 passing |
+| Backend (38 actions) | ✅ Complete |
+| Automated verification | ✅ 96/96 passing |
 | Deployment tooling | ✅ Complete |
 | **Live deployment** | ❌ **Not done** |
 | Brand & content pass | ❌ Not started |

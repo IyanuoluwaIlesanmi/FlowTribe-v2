@@ -308,11 +308,25 @@ function setupInstallTriggers() {
   ScriptApp.newTrigger('jobWeeklyRollover')
     .timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(0).nearMinute(5).create();
 
-  ScriptApp.newTrigger('jobNightlyReconcile').timeBased().everyDays(1).atHour(1).create();
+  // nearMinute is stated on every daily job so the installed schedule matches
+  // the documented one. Without it Apps Script picks a random minute inside
+  // the hour, which is harmless but made jobSessionSweep and jobInviteExpiry
+  // indistinguishable — both were "hour 2" and the docs claimed 02:00 and
+  // 02:15. Apps Script still applies its own ±15 minute jitter; these are the
+  // intended times, not guarantees.
+  ScriptApp.newTrigger('jobNightlyReconcile')
+    .timeBased().everyDays(1).atHour(1).nearMinute(0).create();
+
   ScriptApp.newTrigger('jobRollupRepair').timeBased().everyMinutes(15).create();
-  ScriptApp.newTrigger('jobSessionSweep').timeBased().everyDays(1).atHour(2).create();
-  ScriptApp.newTrigger('jobInviteExpiry').timeBased().everyDays(1).atHour(2).create();
-  ScriptApp.newTrigger('jobDailyRollup').timeBased().everyDays(1).atHour(23).create();
+
+  ScriptApp.newTrigger('jobSessionSweep')
+    .timeBased().everyDays(1).atHour(2).nearMinute(0).create();
+
+  ScriptApp.newTrigger('jobInviteExpiry')
+    .timeBased().everyDays(1).atHour(2).nearMinute(15).create();
+
+  ScriptApp.newTrigger('jobDailyRollup')
+    .timeBased().everyDays(1).atHour(23).nearMinute(0).create();
 
   Logger.log('Installed 6 triggers.');
   return 'Installed 6 triggers.';
