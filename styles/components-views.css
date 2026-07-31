@@ -306,7 +306,7 @@
   flex-shrink: 0;
   width: 1.75rem;
   font-family: var(--ft-font-display);
-  font-weight: var(--ft-weight-extra);
+  font-weight: var(--ft-weight-bold);
   font-variant-numeric: tabular-nums;
   font-size: var(--ft-text-md);
   color: var(--ft-text-muted);
@@ -401,8 +401,8 @@
 .ft-recent__icon {
   display: flex;
   flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: var(--ft-icon-card);
+  height: var(--ft-icon-card);
 }
 
 .ft-recent__body { display: flex; flex-direction: column; min-width: 0; flex: 1; }

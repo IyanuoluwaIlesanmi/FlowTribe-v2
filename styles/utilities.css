@@ -105,6 +105,24 @@
 .ft-text-success   { color: var(--ft-success-700); }
 .ft-text-danger    { color: var(--ft-danger-700); }
 
+/* Icon state colours. Icons are stroked with currentColor, so setting the
+   colour on the wrapper is all that is needed — no icon-specific CSS. */
+.ft-icon-default  { color: var(--ft-icon-default); }
+.ft-icon-active   { color: var(--ft-icon-active); }
+.ft-icon-success  { color: var(--ft-icon-success); }
+.ft-icon-warning  { color: var(--ft-icon-warning); }
+.ft-icon-error    { color: var(--ft-icon-error); }
+.ft-icon-disabled { color: var(--ft-icon-disabled); }
+
+/* Icon sizing by context, for the cases not already covered by a component
+   rule. Matches the Design System's six sizes. */
+.ft-icon-nav     { width: var(--ft-icon-nav);     height: var(--ft-icon-nav); }
+.ft-icon-btn     { width: var(--ft-icon-button);  height: var(--ft-icon-button); }
+.ft-icon-card    { width: var(--ft-icon-card);    height: var(--ft-icon-card); }
+.ft-icon-stat    { width: var(--ft-icon-stat);    height: var(--ft-icon-stat); }
+.ft-icon-empty   { width: var(--ft-icon-empty);   height: var(--ft-icon-empty); }
+.ft-icon-feature { width: var(--ft-icon-feature); height: var(--ft-icon-feature); }
+
 .ft-font-medium   { font-weight: var(--ft-weight-medium); }
 .ft-font-semibold { font-weight: var(--ft-weight-semibold); }
 .ft-font-bold     { font-weight: var(--ft-weight-bold); }
@@ -113,7 +131,7 @@
    stop numbers jittering when they change. */
 .ft-numeral {
   font-family: var(--ft-font-display);
-  font-weight: var(--ft-weight-extra);
+  font-weight: var(--ft-weight-bold);
   font-variant-numeric: tabular-nums;
   letter-spacing: var(--ft-tracking-tight);
 }

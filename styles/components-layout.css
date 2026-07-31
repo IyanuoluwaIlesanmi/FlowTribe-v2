@@ -159,8 +159,8 @@
 }
 
 .ft-bottomnav__icon {
-  width: 1.375rem;
-  height: 1.375rem;
+  width: var(--ft-icon-nav);
+  height: var(--ft-icon-nav);
 }
 
 /* The primary action sits in the nav as a raised circle — the single most

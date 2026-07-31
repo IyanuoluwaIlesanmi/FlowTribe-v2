@@ -170,6 +170,11 @@
   --ft-weight-medium:   500;
   --ft-weight-semibold: 600;
   --ft-weight-bold:     700;
+  /* Satoshi ships Medium 500 and Bold 700 only — the two weights the Design
+     System declares. Asking for 800 makes the browser synthesise a heavier
+     face from 700, which smears at the large numeral sizes where it was
+     being used. Nothing sets this now; it is kept because Inter is variable
+     and genuinely has an 800. */
   --ft-weight-extra:    800;
 
   --ft-leading-tight:   1.15;
@@ -264,6 +269,30 @@
   --ft-tap-target: 2.75rem;  /* 44px — the minimum comfortable touch size */
   --ft-header-height: 3.5rem;
   --ft-bottom-nav-height: 4rem;
+
+  /* ---- Icon sizing -----------------------------------------------------
+     The Design System sizes icons by context rather than by component, so
+     the same glyph is the same size everywhere it does the same job.
+     Before these existed the codebase carried a dozen one-off values —
+     1.125rem here, 0.9rem there — which is how an icon set stops looking
+     like a set. */
+  --ft-icon-nav:     1.5rem;   /* 24px — navigation */
+  --ft-icon-button:  1.25rem;  /* 20px — inside buttons */
+  --ft-icon-card:    1.5rem;   /* 24px — cards and list rows */
+  --ft-icon-stat:    1.75rem;  /* 28px — statistics */
+  --ft-icon-empty:   4rem;     /* 64px — empty states */
+  --ft-icon-feature: 5rem;     /* 80px — feature highlights */
+  --ft-icon-inline:  1rem;     /* 16px — trailing hints inside dense text */
+
+  /* Icon state colours. Default and active are the Design System's; the
+     status three reuse the -700 text companions so an icon beside a label
+     matches it. Disabled is the specified #BDBDBD (neutral-400). */
+  --ft-icon-default:  var(--ft-text-primary);
+  --ft-icon-active:   var(--ft-burgundy-600);
+  --ft-icon-success:  var(--ft-success-700);
+  --ft-icon-warning:  var(--ft-warning-700);
+  --ft-icon-error:    var(--ft-danger-700);
+  --ft-icon-disabled: var(--ft-neutral-400);
 }
 
 /* Breakpoints cannot be CSS variables in media queries, so they are recorded

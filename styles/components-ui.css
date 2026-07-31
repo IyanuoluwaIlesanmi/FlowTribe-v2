@@ -158,8 +158,8 @@
 .ft-btn__icon {
   display: inline-flex;
   flex-shrink: 0;
-  width: 1.125em;
-  height: 1.125em;
+  width: var(--ft-icon-button);
+  height: var(--ft-icon-button);
 }
 
 /* ==========================================================================
@@ -468,8 +468,8 @@
 .ft-option__icon {
   display: flex;
   flex-shrink: 0;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--ft-icon-card);
+  height: var(--ft-icon-card);
 }
 
 /* ==========================================================================

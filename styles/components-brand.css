@@ -36,7 +36,7 @@
 
 .ft-logo__word {
   font-family: var(--ft-font-display);
-  font-weight: var(--ft-weight-extra);
+  font-weight: var(--ft-weight-bold);
   font-size: var(--ft-logo-size);
   line-height: 1;
   letter-spacing: -0.02em;
@@ -170,7 +170,7 @@
 
 .ft-ring__count {
   font-family: var(--ft-font-display);
-  font-weight: var(--ft-weight-extra);
+  font-weight: var(--ft-weight-bold);
   font-variant-numeric: tabular-nums;
   font-size: var(--ft-text-4xl);
   line-height: 1;
@@ -208,8 +208,8 @@
 .ft-stat__icon {
   display: flex;
   flex-shrink: 0;
-  width: 1rem;
-  height: 1rem;
+  width: var(--ft-icon-stat);
+  height: var(--ft-icon-stat);
   color: var(--ft-text-muted);
 }
 
@@ -222,7 +222,7 @@
 
 .ft-stat__value {
   font-family: var(--ft-font-display);
-  font-weight: var(--ft-weight-extra);
+  font-weight: var(--ft-weight-bold);
   font-variant-numeric: tabular-nums;
   font-size: var(--ft-text-3xl);
   line-height: 1.05;
