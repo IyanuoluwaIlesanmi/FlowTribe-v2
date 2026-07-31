@@ -269,6 +269,7 @@
   --ft-tap-target: 2.75rem;  /* 44px — the minimum comfortable touch size */
   --ft-header-height: 3.5rem;
   --ft-bottom-nav-height: 4rem;
+  --ft-sidebar-width: 15rem;  /* 240px — desktop left navigation */
 
   /* ---- Icon sizing -----------------------------------------------------
      The Design System sizes icons by context rather than by component, so

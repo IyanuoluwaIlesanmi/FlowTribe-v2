@@ -139,7 +139,12 @@ export function BottomNav(props) {
         },
         [
           icon(item.iconPaths, { class: item.cta ? undefined : 'ft-bottomnav__icon' }),
-          item.cta ? null : el('span', { text: item.label }),
+          // The label is always in the markup, and CSS decides whether it is
+          // seen. On mobile the CTA is a bare circle, so it is hidden there;
+          // in the desktop sidebar it is a labelled row like every other item.
+          // Rendering it conditionally would mean the component had to know
+          // which layout it was in.
+          el('span', { class: item.cta ? 'ft-bottomnav__cta-label' : null, text: item.label }),
         ],
       );
 

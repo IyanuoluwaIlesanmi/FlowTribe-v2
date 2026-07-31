@@ -79,6 +79,60 @@
 }
 
 /* ==========================================================================
+   Desktop — admin left sidebar
+   --------------------------------------------------------------------------
+   Mirrors the member sidebar. Below 1024px the nav stays the horizontal
+   scrolling strip it already was: the Design System's mobile pattern here is
+   a slide-out drawer, which is new interactive behaviour rather than a
+   restyling, and is deliberately not built.
+
+   The admin shell is constructed WITHOUT a bottomNav, so AppShell gives it
+   `ft-shell--no-nav` and the member selector above cannot match it. Keying on
+   the presence of .ft-adminnav is what distinguishes "no navigation at all"
+   from "navigation that is not a bottom bar".
+   ========================================================================== */
+
+@media (min-width: 1024px) {
+  .ft-shell:has(> .ft-adminnav) {
+    display: grid;
+    grid-template-columns: var(--ft-sidebar-width) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'topbar topbar'
+      'nav    main';
+  }
+
+  .ft-shell:has(> .ft-adminnav) > .ft-topbar     { grid-area: topbar; }
+  .ft-shell:has(> .ft-adminnav) > .ft-adminnav   { grid-area: nav; }
+  .ft-shell:has(> .ft-adminnav) > .ft-shell__main { grid-area: main; }
+
+  .ft-adminnav {
+    position: sticky;
+    top: var(--ft-header-height);
+    align-self: start;
+    height: calc(100dvh - var(--ft-header-height));
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    /* The horizontal strip centred itself inside the page container; as a
+       column it fills its grid track instead. */
+    max-width: none;
+    margin-inline: 0;
+    padding: var(--ft-space-4) var(--ft-space-3);
+    border-right: 1px solid var(--ft-border-subtle);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .ft-adminnav__item {
+    display: flex;
+    justify-content: flex-start;
+    gap: var(--ft-space-3);
+    padding: var(--ft-space-3);
+  }
+}
+
+/* ==========================================================================
    Layout
    ========================================================================== */
 

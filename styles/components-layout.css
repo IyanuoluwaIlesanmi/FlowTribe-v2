@@ -185,46 +185,113 @@
 .ft-bottomnav__cta:hover  { background-color: var(--ft-burgundy-700); }
 .ft-bottomnav__cta:active { transform: scale(0.94); }
 
-/* On desktop the bottom bar becomes a horizontal nav directly beneath the top
-   bar. Flex order moves it ahead of the main region without changing the DOM,
-   so the mobile markup — where it belongs at the end — stays untouched. */
+/* The CTA is a bare circle on mobile, so its label is hidden there and shown
+   again in the desktop sidebar. The span is always in the markup — see the
+   note in components/layout/index.js. */
+.ft-bottomnav__cta-label {
+  display: none;
+}
+
+/* ==========================================================================
+   Desktop — left sidebar
+   --------------------------------------------------------------------------
+   From 1024px the same navigation moves to a left sidebar, per the Design
+   System. Mobile keeps bottom navigation.
+
+   This is PRESENTATION ONLY. The routes, the guards, and the NAV_ITEMS list
+   are untouched — the identical <nav> is laid out differently. The shell
+   becomes a grid so the top bar can span the full width while the sidebar
+   and content sit side by side beneath it; without the grid the sidebar
+   could not be full-height without absolute positioning.
+
+   The :not() guards keep the auth screens out of it. Login and registration
+   render with no navigation at all, and a grid there would leave an empty
+   240px column beside a centred card.
+   ========================================================================== */
+
 @media (min-width: 1024px) {
-  .ft-shell__main { order: 1; }
+  .ft-shell:not(.ft-shell--centered):not(.ft-shell--no-nav) {
+    display: grid;
+    grid-template-columns: var(--ft-sidebar-width) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      'topbar topbar'
+      'nav    main';
+  }
+
+  .ft-shell:not(.ft-shell--centered):not(.ft-shell--no-nav) > .ft-topbar {
+    grid-area: topbar;
+  }
+
+  .ft-shell:not(.ft-shell--centered):not(.ft-shell--no-nav) > .ft-bottomnav {
+    grid-area: nav;
+  }
+
+  .ft-shell:not(.ft-shell--centered):not(.ft-shell--no-nav) > .ft-shell__main {
+    grid-area: main;
+  }
 
   .ft-bottomnav {
-    order: 0;
     position: sticky;
+    /* The mobile rule pins all four edges. A sticky box uses every inset it
+       is given, so the other three have to be released or it never settles
+       against the top. */
     top: var(--ft-header-height);
-    z-index: var(--ft-z-sticky);
-    justify-content: center;
-    gap: var(--ft-space-1);
-    height: auto;
-    padding: var(--ft-space-2) var(--ft-space-4);
+    right: auto;
+    bottom: auto;
+    left: auto;
+    align-self: start;
+    /* Full remaining viewport height, scrolling independently, so a long nav
+       never pushes the page and never scrolls away from the content. */
+    height: calc(100dvh - var(--ft-header-height));
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: var(--ft-space-4) var(--ft-space-3);
     border-top: none;
-    border-bottom: 1px solid var(--ft-border-subtle);
-    background-color: var(--ft-bg-surface);
+    border-right: 1px solid var(--ft-border-subtle);
+    overflow-y: auto;
   }
 
   .ft-bottomnav__item {
     flex: 0 0 auto;
     flex-direction: row;
-    gap: var(--ft-space-2);
-    padding: var(--ft-space-2) var(--ft-space-3);
+    justify-content: flex-start;
+    gap: var(--ft-space-3);
+    padding: var(--ft-space-3);
     font-size: var(--ft-text-sm);
     border-radius: var(--ft-radius-md);
   }
 
   .ft-bottomnav__item[aria-current='page'] {
     background-color: var(--ft-burgundy-50);
+    color: var(--ft-burgundy-700);
+    font-weight: var(--ft-weight-semibold);
   }
 
+  /* The primary action leads the sidebar rather than sitting mid-list, which
+     is where it lands in source order because the mobile layout wants it
+     centred. `order` moves it without touching the markup. */
   .ft-bottomnav__cta {
-    margin-top: 0;
-    width: auto;
+    order: -1;
+    width: 100%;
     height: auto;
-    padding: var(--ft-space-2) var(--ft-space-4);
+    margin: 0 0 var(--ft-space-3);
+    justify-content: flex-start;
+    gap: var(--ft-space-3);
+    padding: var(--ft-space-3);
     border: none;
     border-radius: var(--ft-radius-md);
+    font-size: var(--ft-text-sm);
+    font-weight: var(--ft-weight-semibold);
+  }
+
+  .ft-bottomnav__cta:active {
+    transform: none;
+  }
+
+  .ft-bottomnav__cta-label {
+    display: inline;
   }
 }
 
