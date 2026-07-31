@@ -1,9 +1,42 @@
 # Delivery Roadmap
 
-**Revision 4** — renumbered after Phase 3 (backend architecture). Ten phases.
+> ## ⚠️ The plan below is HISTORICAL
+>
+> It is Revision 4, written during Phase 3, and its phase numbers do **not**
+> match how delivery actually went. Phases 1–8 shipped, consolidated
+> differently from this plan: analytics landed inside Phase 6, launch tooling
+> inside Phase 7, and the visual pass became Phase 8.
+>
+> It is kept because the reasoning in it — particularly the sequencing note —
+> is still worth reading. **For what happens next, use the frozen roadmap
+> immediately below.**
 
-Each phase ends with a written report — what was implemented, what was decided,
-what was assumed — then stops for approval.
+---
+
+# The current roadmap — FROZEN
+
+Set by the project owner. **Five phases remain. Do not add phases, renumber
+them, or propose new features without being asked.**
+
+| Phase | Scope | Status |
+|---|---|---|
+| **8 — Visual Design Pass** | Design system, typography, colours, components, layouts, icons, spacing, responsiveness, animations, UI polish | ✅ **Complete** |
+| **9 — Backend & Integration** | — | Not started |
+| **10 — Testing & Quality Assurance** | — | Not started |
+| **11 — Production Deployment** | — | Not started |
+| **12 — Beta & Public Launch** | — | Not started |
+
+Phase 8 explicitly excluded, and continues to exclude: business logic,
+authentication, registration, database, API, workflow, backend refactoring,
+and feature additions. Decisions taken during it are recorded in
+[`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §8.
+
+---
+
+# Historical plan (Revision 4)
+
+Each phase ended with a written report — what was implemented, what was
+decided, what was assumed — then stopped for approval.
 
 ---
 
@@ -105,8 +138,13 @@ spreadsheet, and a Member who forces the admin URL sees an empty shell.
 
 ## Phase 9 — Analytics
 
-`CommunityStats` and the nightly aggregation. Chart.js vendored into
-`assets/vendor/`, the chart adapter, then the charts.
+`CommunityStats` and the nightly aggregation, the chart adapter, then the
+charts.
+
+> **What actually happened:** this landed inside Phase 6, and Chart.js was
+> never vendored. The adapter was built with a hand-rolled SVG renderer
+> behind it, which is now a locked decision — see
+> [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §3.
 
 The Consistency Score card is **absent, not stubbed** — its registry entry ships
 disabled until we define it together.
