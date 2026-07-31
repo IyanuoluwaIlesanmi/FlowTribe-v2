@@ -102,8 +102,8 @@
 .ft-text-secondary { color: var(--ft-text-secondary); }
 .ft-text-brand     { color: var(--ft-text-brand); }
 .ft-text-accent    { color: var(--ft-text-accent); }
-.ft-text-success   { color: var(--ft-success-500); }
-.ft-text-danger    { color: var(--ft-danger-500); }
+.ft-text-success   { color: var(--ft-success-700); }
+.ft-text-danger    { color: var(--ft-danger-700); }
 
 .ft-font-medium   { font-weight: var(--ft-weight-medium); }
 .ft-font-semibold { font-weight: var(--ft-weight-semibold); }

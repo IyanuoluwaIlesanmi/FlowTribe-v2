@@ -193,7 +193,7 @@
   gap: var(--ft-space-1);
   font-size: var(--ft-text-xs);
   line-height: var(--ft-leading-snug);
-  color: var(--ft-danger-500);
+  color: var(--ft-danger-700);
   font-weight: var(--ft-weight-medium);
 }
 
@@ -288,8 +288,8 @@
 }
 
 .ft-input-status--checking { color: var(--ft-text-muted); }
-.ft-input-status--ok       { color: var(--ft-success-500); }
-.ft-input-status--taken    { color: var(--ft-danger-500); }
+.ft-input-status--ok       { color: var(--ft-success-700); }
+.ft-input-status--taken    { color: var(--ft-danger-700); }
 
 /* ==========================================================================
    PIN input — six separate boxes
@@ -370,7 +370,7 @@
   appearance: none;
   cursor: pointer;
   /* Chevron drawn as an inline SVG data URI: no extra request, no icon font. */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236e1320' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235b0000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right var(--ft-space-4) center;
   transition:

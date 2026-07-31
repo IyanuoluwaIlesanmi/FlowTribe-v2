@@ -341,7 +341,7 @@
 .ft-leaderboard__met {
   width: 0.9rem;
   height: 0.9rem;
-  color: var(--ft-success-500);
+  color: var(--ft-success-700);
   align-self: center;
 }
 

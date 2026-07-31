@@ -242,7 +242,7 @@
 }
 
 .ft-stat--accent .ft-stat__value  { color: var(--ft-gold-500); }
-.ft-stat--success .ft-stat__value { color: var(--ft-success-500); }
+.ft-stat--success .ft-stat__value { color: var(--ft-success-700); }
 
 /* ==========================================================================
    Streak flame
