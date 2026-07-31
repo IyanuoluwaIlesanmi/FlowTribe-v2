@@ -8,8 +8,8 @@ the three `.docx` design documents.
 ```
 You are continuing work on Flow Tribe v2, a content accountability platform
 for a private community of creators. The project is feature complete for
-version 1, the approved visual design has been applied, and it has NOT yet
-been deployed.
+version 1, the approved visual design has been applied, the frontend is fully
+wired to the backend, and it has NOT yet been deployed.
 
 Working directory:
   C:\Users\CG\Documents\Claude\Projects\Personal\OUTPUTS\The-Flow-Tribe\FlowTribe-v2
@@ -126,8 +126,12 @@ Wait for confirmation before making changes.
 STEP 4 — CONTINUE FROM HERE
 =====================================================================
 
-The session ended after Phase 8 (the visual design pass). All engineering and
-all visual work is done. Nothing is deployed.
+The session ended after Phase 9 (backend & integration). All engineering, all
+visual work, and all frontend-backend wiring is done. Nothing is deployed.
+
+Phase 9 closed a blocking defect: auth.changePin had no caller, so an admin
+PIN reset - the only account recovery in the product - stranded the member in
+a redirect loop. There is now a /change-pin screen. Do not remove it.
 
 Immediate priorities:
 

@@ -3,9 +3,10 @@
 Version 2 of **The Flow Tribe w/ Iyanuoluwa Ilesanmi** — the consistency system behind a
 Telegram community for creators and solopreneurs.
 
-> **Status: Phases 1–8 complete. Not yet deployed.**
-> Feature complete for v1 — 10 member screens, 9 admin screens, 38 backend actions —
-> and the approved visual design has been applied. **101/101** automated checks passing.
+> **Status: Phases 1–9 complete. Deployment-ready, not yet deployed.**
+> Feature complete for v1 — 11 member screens, 9 admin screens, 38 backend actions —
+> with the approved visual design applied and the frontend fully wired to the
+> backend. **101/101** automated checks passing.
 > The one blocking item is the live deployment: see [`docs/deployment.md`](docs/deployment.md).
 
 ## Running it locally

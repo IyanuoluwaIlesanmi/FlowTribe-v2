@@ -6,8 +6,8 @@
 > The three `.docx` files = source of truth for **visual design only**.
 > Conflicts are resolved there and **closed**.
 
-**As of the end of Phase 9 M2.** Feature complete for v1, fully verified against
-an in-memory harness, **not yet deployed**.
+**As of the end of Phase 9.** Feature complete, fully wired, verified against
+an in-memory harness. **Deployment-ready and not yet deployed.**
 
 `101/101` automated checks passing. Open `tests/backend.html` to re-run them.
 

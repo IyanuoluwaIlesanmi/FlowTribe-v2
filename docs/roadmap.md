@@ -21,7 +21,7 @@ them, or propose new features without being asked.**
 | Phase | Scope | Status |
 |---|---|---|
 | **8 — Visual Design Pass** | Design system, typography, colours, components, layouts, icons, spacing, responsiveness, animations, UI polish | ✅ **Complete** |
-| **9 — Backend & Integration** | — | Not started |
+| **9 — Backend & Integration** | Close the PIN-change dead end · deployment configuration accuracy · reachable consent and identity · dead capability surface · automated contract verification | ✅ **Complete** |
 | **10 — Testing & Quality Assurance** | — | Not started |
 | **11 — Production Deployment** | — | Not started |
 | **12 — Beta & Public Launch** | — | Not started |
