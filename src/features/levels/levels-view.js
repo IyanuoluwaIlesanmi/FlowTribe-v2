@@ -64,7 +64,7 @@ function render(data) {
 
     /* Progress toward the next */
     current.next
-      ? Section({ title: 'What comes next' }, Card({}, LevelProgress({ next: current.next })))
+      ? Section({ title: 'What comes next' }, Card({}, LevelProgress({ next: current.next, stats })))
       : Section(
           { title: 'What comes next' },
           Card({}, EmptyState({

@@ -55,11 +55,23 @@ export function Field(props) {
     hideLabel = false,
   } = props;
 
-  const id = props.id || control.id || fieldId();
+  // A decorated Input (one with an icon or a suffix) returns a WRAPPER div and
+  // exposes the real control as `.input`. Everything below — the label's `for`,
+  // aria-describedby, aria-invalid, aria-required — must land on the labelable
+  // element, not on the wrapper.
+  //
+  // Until Phase 10 it landed on whatever Input returned. For the submit link
+  // field, which carries an icon, that meant `<label for>` pointed at a div:
+  // tapping the label did not focus the input, and a screen reader never
+  // associated the two. `for` on a non-labelable element is invalid HTML, so
+  // the association was simply absent.
+  const labelable = control.input || control;
+
+  const id = props.id || labelable.id || fieldId();
   const hintId = `${id}-hint`;
   const errorId = `${id}-error`;
 
-  if (!control.id) control.id = id;
+  if (!labelable.id) labelable.id = id;
   control.classList.add('ft-field__control');
 
   const labelNode = el(
@@ -87,7 +99,7 @@ export function Field(props) {
 
   const node = el('div', { class: 'ft-field' }, [labelNode, control, hintNode, errorNode]);
 
-  applyState(control, node, { error, hintId: hintNode ? hintId : null, errorId, required });
+  applyState(labelable, node, { error, hintId: hintNode ? hintId : null, errorId, required });
 
   return stateful(node, {
     /**
@@ -107,7 +119,7 @@ export function Field(props) {
         errorNode.textContent = message;
         errorNode.hidden = !message;
 
-        applyState(control, node, {
+        applyState(labelable, node, {
           error: message,
           hintId: hintNode ? hintId : null,
           errorId,
@@ -120,16 +132,17 @@ export function Field(props) {
   });
 }
 
-function applyState(control, node, { error, hintId, errorId, required }) {
+/** `labelable` is the real control — never a decorated Input's wrapper. */
+function applyState(labelable, node, { error, hintId, errorId, required }) {
   const describedBy = [hintId, error ? errorId : null].filter(Boolean).join(' ');
 
-  if (describedBy) control.setAttribute('aria-describedby', describedBy);
-  else control.removeAttribute('aria-describedby');
+  if (describedBy) labelable.setAttribute('aria-describedby', describedBy);
+  else labelable.removeAttribute('aria-describedby');
 
-  if (error) control.setAttribute('aria-invalid', 'true');
-  else control.removeAttribute('aria-invalid');
+  if (error) labelable.setAttribute('aria-invalid', 'true');
+  else labelable.removeAttribute('aria-invalid');
 
-  if (required) control.setAttribute('aria-required', 'true');
+  if (required) labelable.setAttribute('aria-required', 'true');
 
   node.classList.toggle('ft-field--invalid', Boolean(error));
 }

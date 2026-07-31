@@ -171,7 +171,7 @@ function render(data) {
                 el('span', { class: 'ft-section__title', text: 'Flow Level' }),
                 el('a', { class: 'ft-section__action', attrs: { href: '#/levels' }, text: 'See all' }),
               ]),
-              LevelProgress({ next: level.next }),
+              LevelProgress({ next: level.next, stats }),
             ]),
           )
         : null,

@@ -271,28 +271,49 @@ export function LevelTrack(props) {
  * posts should be able to see that — one combined percentage would hide it.
  *
  * @param {Object} props
- * @param {Object|null} props.next
+ * @param {Object|null} props.next   A FlowLevels row: name, requiredPosts,
+ *                                   requiredPerfectWeeks. Targets only.
+ * @param {Object} [props.stats]     The member's stats: allTimePosts,
+ *                                   perfectWeeks. Supplies current progress.
  * @returns {HTMLElement}
  */
 export function LevelProgress(props) {
-  const { next } = props;
+  const { next, stats } = props;
 
   if (!next) {
     return el('p', { class: 'ft-text-sm ft-text-muted', text: 'You have reached the final level.' });
   }
+
+  // A Flow Level row carries only its TARGETS — requiredPosts and
+  // requiredPerfectWeeks. Current progress lives in the member's stats, which
+  // both callers (the dashboard and the Levels screen) already hold.
+  //
+  // This component previously read `next.posts.current` and
+  // `next.perfectWeeks.current`. No endpoint has ever returned that shape, so
+  // it threw on every render — taking the whole dashboard down with it, since
+  // the view's catch turned a render bug into "We could not load your
+  // dashboard". See docs/CURRENT_STATE.md, Phase 10 defect B3.
+  const current = stats || {};
+  const postsNow = current.allTimePosts || 0;
+  const weeksNow = current.perfectWeeks || 0;
+
+  // A target of 0 is already satisfied; an empty bar beside it reads as
+  // failure rather than as "nothing required here".
+  const rows = [
+    { label: 'Posts', value: postsNow, max: next.requiredPosts || 0 },
+    { label: 'Goal weeks', value: weeksNow, max: next.requiredPerfectWeeks || 0 },
+  ].filter((row) => row.max > 0);
 
   return el('div', { class: 'ft-level-progress' }, [
     el('p', { class: 'ft-level-progress__label' }, [
       'Next: ',
       el('strong', { text: next.name }),
     ]),
-    el('div', { class: 'ft-level-progress__row' }, [
-      el('span', { class: 'ft-level-progress__metric', text: 'Posts' }),
-      ProgressBar({ value: next.posts.current, max: next.posts.target }),
-    ]),
-    el('div', { class: 'ft-level-progress__row' }, [
-      el('span', { class: 'ft-level-progress__metric', text: 'Goal weeks' }),
-      ProgressBar({ value: next.perfectWeeks.current, max: next.perfectWeeks.target }),
-    ]),
+    ...rows.map((row) =>
+      el('div', { class: 'ft-level-progress__row' }, [
+        el('span', { class: 'ft-level-progress__metric', text: row.label }),
+        ProgressBar({ value: row.value, max: row.max }),
+      ]),
+    ),
   ]);
 }
