@@ -9,7 +9,7 @@
 **As of the end of Phase 7.** Feature complete for v1, fully verified against
 an in-memory harness, **not yet deployed**.
 
-`94/94` automated checks passing. Open `tests/backend.html` to re-run them.
+`95/95` automated checks passing. Open `tests/backend.html` to re-run them.
 
 ---
 
@@ -87,7 +87,7 @@ idempotency by `requestId` · `LockService` on every derived-state write ·
 
 ## Verification and tooling
 
-94 checks across 13 groups · in-memory Google fakes with real SHA-256 ·
+95 checks across 13 groups · in-memory Google fakes with real SHA-256 ·
 `setupSmokeTest()` (27 checks against a real spreadsheet, self-cleaning) ·
 `scripts/serve.ps1` · 20 documents
 
@@ -120,15 +120,12 @@ already exists and no celebration is lost in the gap.
 
 **Remaining:** an agreed definition. Paused by explicit decision (D-Q9).
 
-## Brand fonts
+## ~~Brand fonts~~ — COMPLETE (Phase 8)
 
-**Built:** `--ft-font-display` / `--ft-font-brand` variables, `@font-face`
-blocks written and commented in `fonts.css`, graceful system-stack fallback.
-
-**Remaining:** the **Satoshi** and **Inter** `.woff2` files, per
-[`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §4.2. Drop them into
-`assets/fonts/`, uncomment the blocks, repoint the variables. **Self-host — no
-Google Fonts CDN.**
+Satoshi (Medium 500, Bold 700) and Inter (variable, three unicode-range
+subsets) are self-hosted in `assets/fonts/`. No CDN. See
+[`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §6.4 for why Inter
+sits second in `--ft-font-display` — it is load-bearing for Yoruba names.
 
 ---
 
@@ -144,7 +141,7 @@ Google Fonts CDN.**
 | Export (members, submissions, audit) | Design-doc backlog — **not approved for build** |
 | Moderation (flag / mark reviewed) | Design-doc backlog — only `void` exists — **not approved** |
 | Marketing landing page | Design-doc Screen 1 — **not approved** |
-| **Visual Design Pass** | **Approved and scheduled.** Scope: `FINAL_PRODUCT_DECISIONS.md` §4 |
+| "No milestones yet" empty state | The dashboard renders nothing there. The `noMilestones` illustration exists and is unwired — **adding the empty state is new UI, not visual work** |
 
 ---
 
@@ -240,16 +237,16 @@ Currently `2026-08-01` in `Settings`. Confirm before launch.
 
 # Immediate Priorities
 
-D0 is decided, so the path is now linear.
+The Visual Design Pass is done. Deployment is the only thing still blocking.
 
 1. **Deploy** — 30 minutes, unblocks all real verification.
 2. **Run the production checklist** — ~120 items, ~20 minutes.
 3. **Record real latency** — free once deployed.
-4. **Visual Design Pass** — scope in
-   [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §4.
-5. **Brand & Content Pass** — copy only.
+4. **Brand & Content Pass** — copy only.
 
-Steps 1–3 and step 4 are independent and can run in either order.
+⚠️ **Do step 1 knowing this:** milestone and Flow Level `IconID`s ship in the
+seed and are written only into an **empty** sheet. They are correct now. Once
+deployed, any further icon change is a manual spreadsheet edit.
 
 ---
 
@@ -260,36 +257,34 @@ Steps 1–3 and step 4 are independent and can run in either order.
 ```
 1. Read FINAL_PRODUCT_DECISIONS.md FIRST — it governs everything
 2. Read PROJECT_OVERVIEW.md, ENGINEERING.md, this file, and the three .docx files
-3. Open tests/backend.html — confirm 94/94 before changing anything
+3. Open tests/backend.html — confirm 95/95 before changing anything
 4. Deploy per deployment.md
 5. Run setupSmokeTest() on the live project
 6. Work production-checklist.md
 7. Record submission and dashboard latency from the execution log
 ```
 
-## If starting the Visual Design Pass
+## If touching anything visual
 
-Scope is fixed in `FINAL_PRODUCT_DECISIONS.md` §4. **Appearance only.**
+The design system is applied. Before changing it, read
+`FINAL_PRODUCT_DECISIONS.md` §6 and §8 — they record what was decided and,
+more usefully, what was measured.
 
-Suggested order, cheapest first:
+Three rules that are easy to break by accident:
 
-```
-1. styles/tokens.css      — new colour anchors, regenerate the 50–900 scales
-2. assets/fonts/          — Satoshi + Inter .woff2, uncomment fonts.css
-3. tokens.css             — modal radius 28px → 24px
-4. src/lib/icons.js       — add the specified milestone and level icons
-5. MilestoneCatalog /     — remap IconID (SHEET DATA — no deploy needed)
-   FlowLevels sheets
-6. Icon sizing per context (nav 24 · buttons 20 · cards 24 · stats 28)
-7. Empty-state illustrations
-8. Desktop left sidebar navigation  ← largest; routes must not change
-```
+1. **Never set a `-500` status colour as a `color` on a light surface.**
+   `#22C55E` is 2.3:1 and `#F59E0B` is 2.2:1 on white. Use `-700` for text.
+   The scale encodes the split: `-50` tint, `-500` fill, `-700` text.
+2. **Do not reorder `--ft-font-display`.** Inter sits second because Satoshi
+   has no `ẹ ọ Ẹ Ọ ṣ` and headings render member names.
+3. **Satoshi has Medium 500 and Bold 700 only.** Asking for 600 or 800 makes
+   the browser synthesise a face, which smears at large numeral sizes.
 
-Check `gallery.html` after each step — it renders every primitive on one page.
-**Re-run `tests/backend.html` at the end: it must still be 94/94.**
+Check `gallery.html` after each change — it renders every primitive on one
+page. It does **not** load `components-admin.css`; admin layout has to be
+checked on `admin.html`.
 
-Read §6 of the decisions document before touching colours: Golden Yellow and
-Bright Red both fail WCAG AA for normal text.
+**Re-run `tests/backend.html`: it must still be 95/95.**
 
 ## If starting the Brand & Content Pass
 

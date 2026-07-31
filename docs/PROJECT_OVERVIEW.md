@@ -97,7 +97,7 @@ database** — there is no migration; everyone registers fresh.
 | Free-text name as identity | `MemberID` key · unique username · duplicable display name |
 | 4-digit PIN in a spreadsheet column, sent in a URL | 6-digit PIN, salted + peppered hash, POST only |
 | `mode:'no-cors'` — success shown even on failure | Real responses; a failed write is reported as failed |
-| No auth, no tests, dashboards capped at 30 members | Sessions, capabilities, 94 automated checks, no cap |
+| No auth, no tests, dashboards capped at 30 members | Sessions, capabilities, 95 automated checks, no cap |
 
 ---
 
@@ -378,7 +378,7 @@ burst; weeks alone rewards the calendar passing.
 | N4 | Submission under 3s | ⚠️ needs live measurement |
 | N5 | WCAG AA, keyboard navigable | ✅ built in |
 | N6 | No plain-text PINs anywhere | ✅ |
-| N7 | Server-side authorisation on every action | ✅ 94 checks |
+| N7 | Server-side authorisation on every action | ✅ 95 checks |
 | N8 | Operator can fix data without a developer | ✅ |
 | N9 | Every derived value rebuildable from the ledger | ✅ |
 | N10 | No build step | ✅ |
@@ -410,8 +410,9 @@ consistency.
 
 ## Shipped — v1.0
 
-Phases 1–7 complete. Design system, member app, admin dashboard, backend,
-deployment tooling. 94 automated checks passing.
+Phases 1–8 complete. Design system, member app, admin dashboard, backend,
+deployment tooling, and the approved visual design. 95 automated checks
+passing.
 
 ## Next — launch
 
@@ -437,11 +438,11 @@ Telegram bot, member-to-member social features.
 
 | Layer | Status |
 |---|---|
-| Design system | ✅ Complete — ⚠️ see divergence register |
+| Design system | ✅ Complete — approved visual design applied (Phase 8) |
 | Member app (10 screens) | ✅ Complete |
 | Admin dashboard (9 screens) | ✅ Complete |
 | Backend (39 actions) | ✅ Complete |
-| Automated verification | ✅ 94/94 passing |
+| Automated verification | ✅ 95/95 passing |
 | Deployment tooling | ✅ Complete |
 | **Live deployment** | ❌ **Not done** |
 | Brand & content pass | ❌ Not started |
@@ -456,12 +457,13 @@ or the deployment configuration.
 
 ## Blocking launch
 
-1. **Deploy and run the production smoke test** — 30 minutes.
-2. **Visual Design Pass** — apply the design documents' colours, typography,
-   tokens, icons, and sidebar navigation. Scope is defined exactly in
-   [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §4.
-   **Appearance only — no behaviour changes.**
-3. **Brand & Content Pass** — all member-facing copy.
+1. **Deploy and run the production smoke test** — 30 minutes. The only
+   blocking item.
+2. **Brand & Content Pass** — all member-facing copy.
+
+✅ The **Visual Design Pass** is complete. Colours, typography, tokens, icons,
+illustrations, the desktop sidebar, and motion are applied. Decisions are
+recorded in [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §8.
 
 ## Not blocking
 

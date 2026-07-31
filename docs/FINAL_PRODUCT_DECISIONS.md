@@ -255,6 +255,62 @@ general secondary colour risks reading as a warning wherever it appears.
 brand-expressive moments only, and keep every error state on `#DC2626`. Confirm
 with the owner before applying Secondary broadly.
 
+**Status:** Bright Red is **not yet used anywhere** in the implementation. It
+remains available and unapplied pending that confirmation.
+
+### 6.3 The fill / text split — DECIDED, and binding
+
+*Added during Phase 8. Approved by the project owner.*
+
+Contrast was measured for every colour in §4.1 against a light background.
+Three fail WCAG AA for normal text, not the two originally recorded:
+
+| Colour | Role | On white | What Phase 7 used | Verdict |
+|---|---|---|---|---|
+| `#F5B400` | Accent | **1.8:1** | `#EAA00C` | Fails |
+| `#FF2D2D` | Secondary | **3.7:1** | — | Fails |
+| `#22C55E` | Success | **2.3:1** | `#1F7A3D` → 5.4:1 | **Fails — and is a regression** |
+| `#F59E0B` | Warning | **2.2:1** | `#B7791F` → 4.6:1 | **Fails — and is a regression** |
+| `#DC2626` | Error | 4.8:1 | `#C0392B` → 5.1:1 | Passes |
+
+The design documents require AA on every screen, and the build was already
+using Success and Warning as *text* on badges and validation messages.
+
+**The decision:** the approved palette is preserved **exactly** wherever a
+colour is seen as colour — fills, borders, icons, indicators, rings, large
+numerals. **Text** on a light background uses a darker companion of the same
+hue. This is the same treatment §6.1 already prescribes for Golden Yellow,
+applied consistently.
+
+`tokens.css` encodes it in the scale itself, so it needs no discipline to
+follow:
+
+```
+-50    soft tint, for badge and banner backgrounds
+-500   THE APPROVED HEX — fills, borders, icons, indicators
+-700   darker companion — TEXT on a light background
+```
+
+**Never set a `-500` status colour as a `color` on a light surface.** Gold text
+uses `--ft-gold-700`; `--ft-text-accent` already points there.
+
+### 6.4 Fonts do not cover Yoruba
+
+*Found during Phase 8 by measurement.*
+
+**Satoshi has no `ẹ ọ Ẹ Ọ ṣ`** — the Yoruba subdot letters. Headings render
+member names, and a great many members' names contain them.
+
+`--ft-font-display` therefore lists **Inter second**, ahead of the system
+stack, so an absent glyph substitutes to a face that is already loaded and
+looks closely related rather than dropping to a system serif mid-name.
+**Do not reorder that stack.**
+
+Inter covers them only via the `U+1EA0–1EF9` subset, which Google labels
+"vietnamese" because Vietnamese is its largest consumer. `styles/fonts.css`
+loads it deliberately. **Do not remove it on the assumption it is unused** —
+it costs 10 KB and is fetched only on demand.
+
 ---
 
 ## 7. What a future session must do
@@ -268,16 +324,49 @@ with the owner before applying Secondary broadly.
 
 ### The test that catches a mistake
 
-`tests/backend.html` — **94 checks, 13 groups.** Visual work must leave it at
-**94/94**. If a "visual" change breaks a test, it was not a visual change.
+`tests/backend.html` — **95 checks, 13 groups.** Visual work must leave it at
+**95/95**. If a "visual" change breaks a test, it was not a visual change.
+
+The 95th was added during Phase 8: it asserts that every `IconID` in the
+milestone catalog and the Flow Levels sheet resolves to a real icon. Icon
+lookup is `Icons[iconId] || Icons.medal` — a fallback, not a throw — so a
+mistyped id renders the wrong badge and reports nothing. It imports
+`src/lib/icons.js` rather than copying the key list, so it cannot drift.
 
 ---
 
-## 8. Revision
+## 8. Phase 8 decisions — the visual pass
+
+*Approved by the project owner before implementation.*
+
+| # | Decision |
+|---|---|
+| P8-1 | **Fonts are self-hosted** in `assets/fonts/`. No CDN, ever. Satoshi as two static weights; Inter as one variable file per unicode-range subset |
+| P8-2 | **The member reading width stays 544px, single column.** The design documents' 1280px multi-column Dashboard and Profile are **deferred to backlog** — that is layout restructure, not presentation. The admin app keeps its wider layout |
+| P8-3 | **Fill / text colour split** — see §6.3. Binding |
+| P8-4 | **The 4px spacing scale is kept.** It already contains every value the Design System names, plus half-steps. It is not rewritten to force an 8px-only scale |
+| P8-5 | **No admin mobile drawer.** The Design System's slide-out drawer is new interactive behaviour, not restyling. The horizontal scrolling nav strip is retained below 1024px |
+| P8-6 | **Top 10 gets a Ribbon icon.** The design document omits Top 10 and reassigns Medal to 100 Active Days |
+| P8-7 | **The bottom-nav CTA keeps the `+` glyph.** Pen is used where "Submit" appears as a labelled item. A raised `+` circle is the stronger affordance |
+| P8-8 | **Satoshi is used at Medium 500 and Bold 700 only** — the two weights it ships and the two the Design System declares. Six rules previously asked for 800 and were being synthesised |
+| P8-9 | **Modals use shadow level 3 (`lg`)**, so the three named elevation levels map onto real tokens |
+
+### Raised, not built
+
+- **`noMilestones` illustration is defined but unwired.** The dashboard
+  renders nothing where a member has no recent milestones — there is no empty
+  state there to restyle, and adding one is new UI.
+- **Invite codes kept an icon rather than an illustration.** The nearest
+  available illustration is semantically wrong for it.
+
+---
+
+## 9. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | Created. Option B adopted. D0 resolved and closed |
+| 2026-07-31 | Phase 8 visual pass. Added §6.3 (fill/text split — binding), §6.4 (Yoruba font coverage), §8 (Phase 8 decisions). Check count 94 → 95 |
 
 Only the project owner may amend this document. A future session that believes
 something here is wrong should **say so and wait**, not edit it.

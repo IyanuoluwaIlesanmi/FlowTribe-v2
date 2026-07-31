@@ -28,10 +28,13 @@ import { Icons } from '../../lib/icons.js';
  * @param {boolean} props.unlocked
  * @param {string} [props.rarity='Common']
  * @param {'sm'|'md'|'lg'} [props.size='md']
+ * @param {boolean} [props.celebrate=false]  Play the unlock animation. Only
+ *   for the moment a milestone is earned — a gallery of badges that all
+ *   glowed at once would mean nothing.
  * @returns {HTMLElement}
  */
 export function MilestoneBadge(props) {
-  const { iconId, unlocked, rarity = 'Common', size = 'md' } = props;
+  const { iconId, unlocked, rarity = 'Common', size = 'md', celebrate = false } = props;
   const paths = Icons[iconId] || Icons.medal;
 
   return el(
@@ -41,6 +44,7 @@ export function MilestoneBadge(props) {
         'ft-badge-medal',
         size !== 'md' && `ft-badge-medal--${size}`,
         unlocked ? `ft-badge-medal--${rarity.toLowerCase()}` : 'ft-badge-medal--locked',
+        celebrate && 'ft-badge-medal--celebrate',
       ),
       attrs: { 'aria-hidden': 'true' },
     },

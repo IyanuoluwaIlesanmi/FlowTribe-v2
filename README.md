@@ -3,9 +3,10 @@
 Version 2 of **The Flow Tribe w/ Iyanuoluwa Ilesanmi** — the consistency system behind a
 Telegram community for creators and solopreneurs.
 
-> **Status: Phase 1 complete — foundation and design system.**
-> The token layer, core runtime, and shared component library are built and running.
-> Registration, login, dashboard, and submission are Phase 4 and are not built yet.
+> **Status: Phases 1–8 complete. Not yet deployed.**
+> Feature complete for v1 — 10 member screens, 9 admin screens, 39 backend actions —
+> and the approved visual design has been applied. **95/95** automated checks passing.
+> The one blocking item is the live deployment: see [`docs/deployment.md`](docs/deployment.md).
 
 ## Running it locally
 
@@ -20,9 +21,14 @@ powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 | Member app | `http://localhost:5173/` |
 | Admin app | `http://localhost:5173/admin.html` |
 | **Component gallery** | `http://localhost:5173/gallery.html` |
+| **Verification** | `http://localhost:5173/tests/backend.html` |
 
 The gallery renders every token and component on one page — it is the fastest way to see
-what Phase 1 produced.
+the design system. The verification page runs the whole backend against an in-memory fake
+of Google's APIs in about ten seconds; it must read **95/95** before and after any change.
+
+> The gallery does **not** load `styles/components-admin.css`. Admin-only layout has to
+> be checked on `admin.html`.
 
 There is no build step. Edit a file, refresh, done.
 
@@ -35,13 +41,12 @@ a week**. FlowTribe v2 is the software that makes that rule visible and felt —
 post, see their own streak, and appear on a weekly leaderboard that drives the shoutouts the
 community is built around.
 
-Three surfaces:
+Two applications:
 
 | Surface | Who uses it | Job |
 |---|---|---|
-| **Log page** | FlowMates | Record a post in ~10 seconds |
-| **Streak page** | FlowMates | See posts-this-week, week streak, all-time total, rank |
-| **Admin view** | Iyanu + team | Weekly leaderboard, who's behind, FlowMate-of-the-Week pick |
+| **Member app** (10 screens) | FlowMates | Register, log a post in ~10 seconds, see the weekly ring, activity calendar, milestones, Flow Level, and leaderboard |
+| **Admin app** (9 screens) | Iyanu + team | Overview, members, submissions, leaderboard, analytics, invite codes, settings, audit log |
 
 ## Why v2 exists
 
@@ -68,14 +73,15 @@ links are swapped, and its spreadsheet stays intact as a historical record.
 FlowTribe-v2/
 ├── docs/          Architecture, data model, API contract, roadmap, v1 audit
 ├── src/           Application code
-│   ├── pages/       One folder per surface (log, streak, admin)
-│   ├── components/  Shared UI (logo lockup, progress ring, stat tiles, form fields)
-│   └── lib/         Framework-free logic (streak math, validation, API client)
-├── assets/        images/ · icons/ · fonts/
-├── styles/        Design tokens and shared stylesheets
-├── scripts/       Build, bundle, and deploy tooling
+│   ├── core/        dom · component · store · router · api · session · errors · config
+│   ├── features/    One folder per screen (auth, dashboard, submit, …, admin)
+│   ├── components/  ui/ · brand/ · layout/ · charts/ · data/
+│   └── lib/         format · validators · platforms · icons · illustrations · catalog
+├── assets/        fonts/ (Satoshi, Inter) · images/ · icons/
+├── styles/        12 stylesheets — tokens.css is the single source of visual truth
+├── scripts/       serve.ps1, the local static dev server
 ├── appsscript/    Google Apps Script backend (the real source of truth, not doc snippets)
-└── tests/         Unit tests, primarily around streak math and validation
+└── tests/         backend.html — 95 checks against in-memory Google fakes
 ```
 
 ## Docs
@@ -113,8 +119,10 @@ Read in this order.
 ## Tech
 
 HTML · CSS · vanilla JavaScript · Google Apps Script · Google Sheets. No frameworks, no build step.
-Exactly one runtime dependency — Chart.js, vendored locally and loaded by the admin shell only, so
-the member app on mobile data never downloads it. Mobile-first.
+
+**Zero runtime dependencies.** Charts are hand-rolled SVG — a locked decision, and one the
+Design System independently specifies. The only downloaded assets are the two self-hosted
+brand fonts. Mobile-first.
 
 ## Identity model
 
@@ -132,5 +140,14 @@ Registration is invite-gated and split in two: **Stage 1** creates the account (
 
 ## Brand
 
-Deep burgundy `#6E1320` and gold `#EAA00C`. Logo lockup is **THE Flo[w] TRIBE**. Members are
-**FlowMates** (capital M). Tone is warm, plain, and human — never corporate.
+Deep Burgundy `#5B0000` and Golden Yellow `#F5B400`, on Soft Off White `#F8F8F8` with Charcoal
+`#222222` text. **Satoshi** for headings, statistics and buttons; **Inter** for body, forms and
+admin — both self-hosted, no CDN. Logo lockup is **THE Flo[w] TRIBE**. Members are **FlowMates**
+(capital M). Tone is warm, plain, and human — never corporate.
+
+Full palette, type scale, tokens, and icon mappings:
+[`docs/FINAL_PRODUCT_DECISIONS.md`](docs/FINAL_PRODUCT_DECISIONS.md) §4.
+
+> Golden Yellow, and the Success and Warning hues, all fail WCAG AA as text on a light
+> background. They are used as fills, borders, icons and indicators; text uses the darker
+> `-700` companion in `tokens.css`. See §6 of that document before touching colour.

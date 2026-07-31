@@ -249,6 +249,16 @@
   color: var(--ft-neutral-400);
 }
 
+/* The unlock moment. Applied where a milestone is being celebrated rather
+   than merely listed: a soft gold halo that swells once and settles,
+   alongside the badge's own scale-in. Restrained on purpose — the Design
+   System asks for "rewarding, not distracting". */
+.ft-badge-medal--celebrate {
+  animation:
+    ft-pop-in var(--ft-duration-celebrate) var(--ft-ease-spring) both,
+    ft-glow var(--ft-duration-celebrate) var(--ft-ease-out) both;
+}
+
 /* ==========================================================================
    Milestone card
    ========================================================================== */

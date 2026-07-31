@@ -114,6 +114,20 @@
 }
 
 /* Gentle attention pull for a primary CTA that has gone untouched. */
+/* The unlock glow. A soft halo that swells once and settles, rather than a
+   pulse that keeps going — the moment should feel marked, not alarmed. */
+@keyframes ft-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 180, 0, 0);
+  }
+  45% {
+    box-shadow: 0 0 0 12px rgba(245, 180, 0, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 20px rgba(245, 180, 0, 0);
+  }
+}
+
 @keyframes ft-pulse {
   0%, 100% { transform: scale(1); }
   50%      { transform: scale(1.03); }
@@ -132,6 +146,12 @@
   }
 
   .ft-pulse {
+    animation: none !important;
+  }
+
+  /* The unlock halo is celebration, not information — the badge, the name
+     and the copy all still say what happened. */
+  .ft-badge-medal--celebrate {
     animation: none !important;
   }
 }

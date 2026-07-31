@@ -138,8 +138,10 @@ FlowTribe-v2/
 │   │   │                        avatar, spinner, skeleton, empty, switch)
 │   │   ├── brand/               logo · progress-ring · stat-card
 │   │   │                        success-burst · activity-calendar · milestone
-│   │   └── layout/              app-shell · top-bar · bottom-nav
-│   │                            page-header · section · mode-switch
+│   │   ├── layout/              app-shell · top-bar · bottom-nav (sidebar at
+│   │   │                        ≥1024px) · page-header · section · mode-switch
+│   │   ├── charts/              Hand-rolled SVG renderer behind an adapter
+│   │   └── data/                Admin table, filters, pagination
 │   │
 │   ├── features/                One folder per screen
 │   │   ├── auth/                login · register · welcome
@@ -154,14 +156,16 @@ FlowTribe-v2/
 │   │                            invites · settings · audit · shared
 │   │
 │   ├── lib/                     format · validators · platforms
-│   │                            icons · catalog
+│   │                            icons · illustrations · catalog
 │   └── app/navigation.js        Router registry, so views can navigate
 │
 ├── styles/                    12 files, loaded as separate <link> tags
-│   ├── tokens.css               EVERY colour, space, radius, shadow, duration
-│   ├── fonts.css                System stack; @font-face ready but commented
+│   ├── tokens.css               EVERY colour, space, radius, shadow, duration,
+│   │                            icon size, and the sidebar width
+│   ├── fonts.css                Self-hosted Satoshi + Inter @font-face
 │   ├── reset.css   base.css   animations.css   utilities.css
 │   └── components-{ui,brand,layout,calendar,views,admin}.css
+│                                ⚠️ gallery.html omits components-admin.css
 │
 ├── appsscript/                20 files, 7,600 lines
 │   ├── 00_Config.gs             Sheet names, column maps, enums, defaults
@@ -185,7 +189,10 @@ FlowTribe-v2/
 │
 ├── tests/
 │   ├── backend.html             Harness — open in a browser
-│   ├── backend-suite.js         94 checks across 13 groups
+│   ├── backend-suite.js         95 checks across 13 groups. Loaded as a
+│   │                            MODULE so it can import the real icon set
+│   ├── index.html / suite.js    Earlier pure-business-logic suite, kept as
+│   │                            reference. backend.html is the gate
 │   └── fakes/GoogleFakes.js     In-memory SpreadsheetApp, CacheService,
 │                                LockService, PropertiesService, real SHA-256
 │
@@ -926,7 +933,7 @@ ES modules are subject to CORS — **`file://` will not work**.
 
 # Testing Strategy
 
-**94 automated checks across 13 groups.** Open `tests/backend.html`.
+**95 automated checks across 13 groups.** Open `tests/backend.html`.
 
 ## How it works
 
@@ -1004,7 +1011,8 @@ project.
 | K6 | `Members` full-scan per lookup | Low | Trivial at 60 rows; revisit at ~500 |
 | K7 | Idempotency key is client-supplied | Medium | Bounded by daily cap and duplicate-link detection |
 | K8 | No self-service PIN recovery | Low | Admin reset; error copy names the path |
-| K9 | Brand fonts not self-hosted | Low | System stack; `@font-face` blocks ready in `fonts.css` |
+| ~~K9~~ | ~~Brand fonts not self-hosted~~ | **RESOLVED** | Satoshi and Inter self-hosted in `assets/fonts/` (Phase 8). No CDN |
+| K11 | Satoshi has no Yoruba subdot glyphs | Low | Mitigated: Inter sits second in `--ft-font-display` and substitutes per-glyph. See `FINAL_PRODUCT_DECISIONS.md` §6.4 |
 | K10 | `gallery.html` and `tests/` ship unless removed | Trivial | Contain no data |
 
 ---
@@ -1013,33 +1021,29 @@ project.
 
 ## Blocking launch
 
-1. **Deploy and run `setupSmokeTest()`** — 30 minutes.
-2. **Visual Design Pass** — scope defined exactly in
-   [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §4.
+1. **Deploy and run `setupSmokeTest()`** — 30 minutes. **The only blocking
+   item.**
 
-   Roughly in order of cost:
-   - `styles/tokens.css` — replace the colour anchors, regenerate the scales
-   - `assets/fonts/` — add Satoshi and Inter `.woff2`, uncomment the
-     `@font-face` blocks in `styles/fonts.css`, repoint the font variables
-   - Modal radius 28px → 24px
-   - `src/lib/icons.js` — add the specified milestone and level icons, remap
-     `MilestoneCatalog.IconID` and `FlowLevels.IconID` (**sheet data, no
-     deploy needed**)
-   - Icon sizing per context (nav 24 · buttons 20 · cards 24 · stats 28 ·
-     empty 64 · feature 80)
-   - Empty-state illustrations
-   - **Desktop left sidebar navigation** — the largest change. Routes and
-     guards must not change; if they would, stop and raise it
+## ✅ Visual Design Pass — COMPLETE (Phase 8)
 
-   **The suite must stay at 94/94.** A visual change that breaks a test was
-   not a visual change.
+Colours, typography, tokens, icons, icon sizing, illustrations, the desktop
+sidebar, motion, and UI polish are all applied. Decisions recorded in
+[`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §8; the fill/text
+contrast rule in §6.3 is **binding** and the font-coverage note in §6.4
+explains an ordering that must not be changed.
+
+⚠️ **One sequencing consequence.** `MilestoneCatalog.IconID` and
+`FlowLevels.IconID` are seeded by `setupSeedCatalog()`, which only writes to
+an **empty** sheet. The remap landed before first deployment, so it ships as
+code. **After** deployment, changing an icon means editing the spreadsheet —
+the seed will not overwrite existing rows.
 
 ## After the first deploy
 
-3. Record real submission and dashboard latency; apply the agreed fallback if
+2. Record real submission and dashboard latency; apply the agreed fallback if
    over budget.
-4. Brand & Content Pass — replace placeholder copy.
-5. Resolve K2.
+3. Brand & Content Pass — replace placeholder copy.
+4. Resolve K2.
 
 ## Deferred, seams already in place
 

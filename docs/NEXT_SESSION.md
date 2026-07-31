@@ -8,7 +8,8 @@ the three `.docx` design documents.
 ```
 You are continuing work on Flow Tribe v2, a content accountability platform
 for a private community of creators. The project is feature complete for
-version 1 and has NOT yet been deployed.
+version 1, the approved visual design has been applied, and it has NOT yet
+been deployed.
 
 Working directory:
   C:\Users\CG\Documents\Claude\Projects\Personal\OUTPUTS\The-Flow-Tribe\FlowTribe-v2
@@ -68,11 +69,20 @@ approval, even if a design document says otherwise:
   Apps Script architecture · API contracts · backend logic ·
   frontend behaviour · navigation flow · all implemented engineering decisions
 
-ADOPTABLE — apply freely as visual work:
+ADOPTABLE — visual work. NOTE: this has now been DONE, in Phase 8.
 
   brand colours · typography · design tokens · spacing · border radius ·
   shadows · buttons · cards · inputs · icons · illustrations · animations ·
   responsive layout improvements · UI polish
+
+  Two things inside that scope were deliberately NOT taken, and both are
+  recorded in FINAL_PRODUCT_DECISIONS.md §8:
+
+    - The 1280px multi-column member Dashboard and Profile. The member
+      reading width stays 544px and single-column. That is layout
+      restructure, not presentation.
+    - The admin mobile navigation drawer. That is new interactive
+      behaviour, not restyling.
 
 WHERE THE DESIGN DOCS CONTRADICT THE BUILD:
   The build wins. The conflict is ALREADY RESOLVED in
@@ -97,7 +107,7 @@ Run the test suite and confirm it is green BEFORE touching anything:
   powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 
   Then open http://localhost:5173/tests/backend.html
-  Expected: 94/94 passing across 13 groups.
+  Expected: 95/95 passing across 13 groups.
 
   Also useful:
     http://localhost:5173/              member app
@@ -116,30 +126,42 @@ Wait for confirmation before making changes.
 STEP 4 — CONTINUE FROM HERE
 =====================================================================
 
-The session ended after Phase 7 (production readiness) and the final product
-decision. All engineering is done. Nothing is deployed.
+The session ended after Phase 8 (the visual design pass). All engineering and
+all visual work is done. Nothing is deployed.
 
 Immediate priorities:
 
-  1. Deploy — docs/deployment.md, about 30 minutes.
+  1. Deploy — docs/deployment.md, about 30 minutes. THE ONLY BLOCKING ITEM.
   2. Run setupSmokeTest() on the live project. Expect "ALL 27 CHECKS PASSED".
   3. Work docs/production-checklist.md (~120 items, ~20 minutes).
   4. Record real submission and dashboard latency from the execution log.
      This is the only unmeasured performance number; see ENGINEERING.md
      "Performance Considerations" for the agreed fallback if it exceeds 3s.
-  5. VISUAL DESIGN PASS — approved and scheduled.
-     Exact scope: FINAL_PRODUCT_DECISIONS.md §4.
-     Suggested order: tokens.css colours → fonts → modal radius → icons →
-     icon sizing → illustrations → desktop left sidebar navigation.
-     APPEARANCE ONLY. If a change would alter behaviour, stop and ask.
-     Read §6 first: Golden Yellow (#F5B400) and Bright Red (#FF2D2D) both
-     fail WCAG AA for normal text.
-  6. Brand & Content Pass — copy only.
+  5. Brand & Content Pass — copy only.
 
-Steps 1–4 and step 5 are independent; either order is fine.
+BEFORE YOU DEPLOY, KNOW THIS
+Milestone and Flow Level IconIDs are written by setupSeedCatalog(), which
+only seeds an EMPTY sheet. They are correct in the code today. After the
+first deploy, changing an icon means editing the spreadsheet by hand — the
+seed will not overwrite existing rows.
 
-AFTER ANY VISUAL WORK: re-run tests/backend.html. It must still be 94/94.
+THE VISUAL DESIGN PASS IS COMPLETE — do not redo it.
+What was decided, and what was measured, is in FINAL_PRODUCT_DECISIONS.md
+§6 and §8. Three rules that are easy to break by accident:
+
+  - NEVER set a -500 status colour as a `color` on a light surface.
+    #22C55E is 2.3:1 and #F59E0B is 2.2:1 on white. Text uses -700.
+    The scale encodes it: -50 tint, -500 fill, -700 text.
+  - DO NOT reorder --ft-font-display. Inter sits second because Satoshi has
+    no ẹ ọ Ẹ Ọ ṣ, and headings render member names.
+  - Satoshi ships Medium 500 and Bold 700 ONLY. Asking for 600 or 800 makes
+    the browser synthesise a face, which smears at large numeral sizes.
+
+AFTER ANY VISUAL WORK: re-run tests/backend.html. It must still be 95/95.
 A "visual" change that breaks a test was not a visual change.
+
+Note: gallery.html does NOT load styles/components-admin.css. Admin-only
+layout must be checked on admin.html.
 
 =====================================================================
 CONVENTIONS YOU MUST PRESERVE
@@ -184,7 +206,7 @@ WORKING AGREEMENT
   - If you believe a better approach exists, explain the trade-offs and ask.
   - Preserve existing functionality unless a change is explicitly approved.
   - Report honestly: distinguish what is VERIFIED from what is ASSUMED.
-    The previous session drew this line carefully — 94 checks prove our code
+    The previous session drew this line carefully — 95 checks prove our code
     against an in-memory fake of Google's APIs; they do not prove Apps
     Script's runtime, real latency, or the deployment. Keep that distinction.
   - Pause at the end of each phase and wait for review.
@@ -209,7 +231,7 @@ Everything a new session needs is in files, not in conversation:
 | Security posture with evidence | `security-review.md` |
 | How to deploy | `deployment.md` |
 | How to verify | `production-checklist.md` |
-| **Whether it still works** | `tests/backend.html` — 94 checks |
+| **Whether it still works** | `tests/backend.html` — 95 checks |
 
 The test suite is the real safety net. Any future session can prove the system
 is intact in about ten seconds, before changing a line.

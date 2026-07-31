@@ -11,9 +11,8 @@
     <!--
       Member app shell.
 
-      Phase 1 ships the shell and the design system only. Registration, login,
-      the dashboard, and submission arrive in Phase 4 as route modules loaded
-      by the router.
+      All ten member screens are built and load as route modules fetched on
+      first visit, so a member downloads only the screens they actually open.
 
       Stylesheets are separate <link> tags rather than one file with @import
       because @import chains are fetched serially — each one costs a round trip

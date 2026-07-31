@@ -14,16 +14,17 @@
       WHY TWO SHELLS
       The member app loads on a phone, on mobile data, several times a week.
       The admin app loads on a laptop, by three or four people, and carries the
-      data tables and Chart.js that members would otherwise download and never
-      use. Splitting them keeps the member payload small without a bundler.
+      data tables, charts, and admin stylesheet that members would otherwise
+      download and never use. Splitting them keeps the member payload small
+      without a bundler.
 
       This is NOT a security boundary. The shell is a static file and anyone can
       fetch it. It contains no data — every panel is populated by an API call
       that the server authorises against the caller's capabilities. A member who
       loads this page sees an empty frame and nothing else.
 
-      Phase 1 ships the shell only. Admin screens arrive in Phase 5, and
-      Chart.js is vendored in Phase 6.
+      Charts are hand-rolled SVG. No charting library is loaded here or
+      anywhere else — see src/components/charts/index.js.
     -->
     <link rel="stylesheet" href="styles/tokens.css" />
     <link rel="stylesheet" href="styles/fonts.css" />

@@ -33,6 +33,18 @@
   padding-bottom: var(--ft-space-8);
 }
 
+/* Page transition. The router replaces the outlet's child on every
+   navigation, so animating the direct child gives a fade on arrival at no
+   scripting cost — and on the first paint too, which is what the Design
+   System asks for on initial load.
+
+   A fade rather than a rise: a rise on a long screen drags content past the
+   fold and reads as jitter. Suppressed under prefers-reduced-motion by the
+   global duration collapse in tokens.css. */
+.ft-shell__main > * {
+  animation: ft-fade-in var(--ft-duration-base) var(--ft-ease-out);
+}
+
 /* Centred single-column layout used by login and registration. */
 .ft-shell--centered {
   justify-content: center;

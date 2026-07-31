@@ -1,23 +1,20 @@
 /**
  * Charts.
  *
- * ── A NOTE ON CHART.JS ────────────────────────────────────────────────────
- * Decision D22 approved Chart.js, vendored locally into `assets/vendor/`.
- * I could not vendor it: fetching a third-party binary is not something this
- * environment can do, and committing a library I have not read would be worse
- * than not committing one.
+ * ── HAND-ROLLED SVG. THIS IS SETTLED ──────────────────────────────────────
+ * Decision D22 originally approved Chart.js, vendored locally. It was never
+ * vendored, and the SVG renderer written in its place was reviewed and kept:
+ * FINAL_PRODUCT_DECISIONS.md §3 now locks it, and the Flow Tribe Design
+ * System independently specifies SVG charts. Do NOT reintroduce Chart.js or
+ * any other charting library.
  *
- * So this module is the ADAPTER that D22 called for, with an SVG renderer
- * behind it. Views ask for "a line chart with this data and this title"; they
- * never touch a charting API. If you drop `chart.umd.min.js` into
- * assets/vendor/ and add the script tag, swapping the renderer is a change to
- * this one file and nothing else — which was the entire point of the adapter.
+ * The adapter shape survives from D22 and still earns its keep: views ask for
+ * "a line chart with this data and this title" and never touch a rendering
+ * API, so the renderer stays replaceable without touching a single view.
  *
- * What the SVG renderer gives up: tooltips on hover, animation, and the long
+ * What the SVG renderer gives up: hover tooltips, animation, and the long
  * tail of chart types. What it gives back: no dependency, ~250 lines, and
  * charts that inherit the design tokens directly.
- *
- * Flagged for your decision rather than settled silently.
  * ─────────────────────────────────────────────────────────────────────────
  *
  * @module components/charts
