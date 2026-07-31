@@ -279,7 +279,6 @@ is structurally impossible rather than merely unlikely.
 |---|---|---|---|
 | `admin.members.list` | `member:read:all` | search, platform, status, goal, role, page | Contact details **masked** in the list |
 | `admin.members.get` | `member:read:all` + `profile:read:all` | `{ memberId }` | Full record. **Logged as a READ** |
-| `admin.members.create` | `member:create` | member fields + temp PIN | Sets `MustChangePin` |
 | `admin.members.update` | `member:update` | `{ memberId, fullName?, username?, platform?, weeklyGoal? }` | Only route by which a username changes |
 | `admin.members.setStatus` | `member:status:set` | `{ memberId, status }` | Deactivating revokes all their sessions |
 | `admin.members.resetPin` | `member:pin:reset` | `{ memberId, tempPin }` | Sets `MustChangePin`, revokes all sessions |

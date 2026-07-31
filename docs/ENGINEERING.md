@@ -681,8 +681,9 @@ evaluator IDs in both directions.
 
 `admin.overview` · `admin.analytics` · `admin.members.{list,get,update,setStatus,resetPin,setRole,delete,reconcile}` · `admin.invites.{create,list,revoke}` · `admin.submissions.{list,void}` · `admin.settings.{get,update}` · `admin.audit.list`
 
-**Note:** `admin.members.create` is declared in the capability table but has no
-handler — member creation is invite-only. See Known Issues.
+**Note:** there is no `admin.members.create`. Member creation is invite-only
+by product decision, and the `member:create` grant that gated a handler that
+was never written was removed in Phase 9.
 
 ---
 
@@ -1003,7 +1004,7 @@ project.
 | # | Issue | Severity | Notes |
 |---|---|---|---|
 | ~~K1~~ | ~~Design docs diverge from the build~~ | **RESOLVED** | Closed by [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md). Implementation governs behaviour; docs govern appearance. **Not a defect** |
-| K2 | `admin.members.create` capability exists with no handler | Low | Member creation is invite-only. Either wire it or drop the capability |
+| ~~K2~~ | ~~`admin.members.create` capability with no handler~~ | **RESOLVED** | Grant removed in Phase 9. Member creation is invite-only; the suite now fails on any unused capability |
 | K3 | Submission latency unmeasured | Medium | Instrumented; first live run gives real numbers |
 | K4 | Lock contention untested under real concurrency | Low | Fake is single-threaded |
 | K5 | Notification outbox has no delivery worker | Low | By design — rows accumulate so nothing is lost when delivery is added |
@@ -1042,7 +1043,6 @@ the seed will not overwrite existing rows.
 2. Record real submission and dashboard latency; apply the agreed fallback if
    over budget.
 3. Brand & Content Pass — replace placeholder copy.
-4. Resolve K2.
 
 ## Deferred, seams already in place
 

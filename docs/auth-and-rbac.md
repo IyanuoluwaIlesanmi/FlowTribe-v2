@@ -263,14 +263,12 @@ against, and they are where privilege bugs live.
 | `dashboard:self` | ✅ | ✅ | ✅ |
 | `submission:create` | ✅ | ✅ | ✅ |
 | `submission:read:self` | ✅ | ✅ | ✅ |
-| `stats:read:self` | ✅ | ✅ | ✅ |
 | `leaderboard:read` | ✅ | ✅ | ✅ |
 | `pin:update:self` | ✅ | ✅ | ✅ |
 | `profile:read:self` | ✅ | ✅ | ✅ |
 | `profile:update:self` | ✅ | ✅ | ✅ |
 | `admin:overview:read` | ❌ | ✅ | ✅ |
 | `member:read:all` | ❌ | ✅ | ✅ |
-| `member:create` | ❌ | ✅ | ✅ |
 | `member:update` | ❌ | ✅ | ✅ |
 | `member:status:set` | ❌ | ✅ | ✅ |
 | `member:pin:reset` | ❌ | ✅ | ✅ |

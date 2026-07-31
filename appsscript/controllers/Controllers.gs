@@ -504,6 +504,18 @@ var AdminController = (function () {
 
   function getMember(ctx) {
     Validate.required(ctx.payload, ['memberId']);
+
+    // Two capabilities, because this returns two different kinds of thing.
+    // The action table gates the record on `member:read:all`; the Stage 2
+    // profile below is contact detail — WhatsApp number, email, bio — and
+    // api.md has always specified `profile:read:all` for it.
+    //
+    // Nothing changes for the roles that exist today: both Community Manager
+    // and Super Admin hold it. The point is that the separation the capability
+    // matrix already describes is now actually enforced, so a future role
+    // granted `member:read:all` does not silently inherit access to PII.
+    Authorize.check(ctx, 'profile:read:all');
+
     var member = MemberService.requireById(String(ctx.payload.memberId));
 
     // PII access is logged. Members hand over WhatsApp numbers on the promise

@@ -26,11 +26,22 @@
  * comparisons are where privilege bugs live.
  */
 var CAPABILITIES = (function () {
+  // EVERY CAPABILITY HERE MUST BE REQUIRED BY AN ACTION.
+  //
+  // A grant nothing checks is not a permission, it is a comment that looks
+  // like one — and the next person to read this matrix will believe it. The
+  // suite enforces this: an unused capability fails verification.
+  //
+  // Removed in Phase 9:
+  //   stats:read:self — every statistic a member can see arrives through
+  //     `dashboard:self` or `profile:read:self`. There was never a separate
+  //     stats endpoint for it to gate.
+  //   member:create — member creation is invite-only by product decision, so
+  //     the endpoint it would have gated was never built. This was K2/T2.
   var MEMBER = [
     'dashboard:self',
     'submission:create',
     'submission:read:self',
-    'stats:read:self',
     'leaderboard:read',
     'pin:update:self',
     'profile:read:self',
@@ -40,7 +51,6 @@ var CAPABILITIES = (function () {
   var MANAGER = MEMBER.concat([
     'admin:overview:read',
     'member:read:all',
-    'member:create',
     'member:update',
     'member:status:set',
     'member:pin:reset',

@@ -169,7 +169,6 @@ with a defined scope.
 | # | Item | Severity | Cost to fix |
 |---|---|---|---|
 | T1 | Submission latency estimated, not measured | Medium | Free — read the log after the first deploy |
-| T2 | `admin.members.create` capability with no handler | Low | 10 min: wire it or drop it |
 | T3 | Client-supplied idempotency key | Medium | ~1h: add a content-based check |
 | T4 | `MemberService` does three jobs | Low | ~2h: split per Phase 3 review W3 |
 | T5 | `Members` full scan per lookup | Low | Trivial at 60 rows; revisit at ~500 |
