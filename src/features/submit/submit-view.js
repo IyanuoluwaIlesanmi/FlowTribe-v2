@@ -132,10 +132,16 @@ function SuccessState(root, result) {
   // post, which submit()'s catch then showed as "We couldn't reach Flow Tribe"
   // on a post that was already in the ledger.
   //
-  // `stats` is absent entirely when the server sets statsSettling — the ledger
-  // was written but a rollup step failed. Phase 10 M2 gives that its own copy;
-  // the guard here is what stops it being a crash.
+  // `stats` is absent entirely when the server sets statsSettling: the ledger
+  // was written but a rollup step failed, so the derived numbers would be
+  // stale. RollupRepair closes the gap within fifteen minutes.
+  //
+  // The post is a fact either way, so the success state is the same. What
+  // changes is that we do not draw a progress ring we know to be wrong —
+  // showing a member "1 of 3" when they have posted four times is worse than
+  // telling them the count is catching up.
   const stats = result.stats || null;
+  const settling = Boolean(result.statsSettling);
 
   return el('div', { class: 'ft-submit-success' }, [
     el('div', { class: 'ft-submit-success__burst' }, SuccessBurst({ label: 'Post logged' })),
@@ -159,7 +165,16 @@ function SuccessState(root, result) {
             }),
           ]),
         ])
-      : null,
+      : settling
+        ? Card({}, [
+            el('div', { class: 'ft-week-panel' }, [
+              el('p', {
+                class: 'ft-week-panel__message',
+                text: 'Your post is saved. This week’s numbers are still catching up — check back in a few minutes.',
+              }),
+            ]),
+          ])
+        : null,
 
     el('div', { class: 'ft-stack ft-gap-3 ft-mt-6' }, [
       Button({

@@ -64,8 +64,12 @@ export function PinInput(props = {}) {
         // truncate it to a single digit.
         maxlength: String(length),
         autocomplete: index === 0 ? 'one-time-code' : 'off',
-        'aria-label': index === 0 ? ariaLabel : null,
-        'aria-hidden': index === 0 ? null : 'true',
+        // Every box is focusable, so every box needs a name. These previously
+        // carried aria-hidden="true" on boxes 2-6, which the ARIA spec
+        // prohibits outright on a focusable element: a screen-reader user
+        // typing their PIN moved through five controls the accessibility tree
+        // said did not exist. Positional labels say where they are instead.
+        'aria-label': index === 0 ? ariaLabel : `${ariaLabel}, digit ${index + 1} of ${length}`,
         'data-index': String(index),
       },
     });

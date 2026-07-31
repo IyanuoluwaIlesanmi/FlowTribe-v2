@@ -12,7 +12,9 @@
  * unprotected admin endpoint is to add a handler and forget the check, and
  * this structure makes forgetting impossible rather than merely unlikely.
  *
- * `capability: null` marks a genuinely public action. There are three.
+ * `capability: null` marks a genuinely public action. There are four:
+ * system.health, auth.checkUsername, auth.register, auth.login. The client
+ * mirrors this list in src/core/api.js PUBLIC_ACTIONS — keep them in step.
  *
  * @see docs/api.md
  * @see docs/security-architecture.md §4

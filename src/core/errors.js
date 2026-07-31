@@ -175,12 +175,18 @@ export function messageFor(code, vars = {}) {
 export function toAppError(error) {
   if (error instanceof AppError) return error;
 
-  if (error instanceof TypeError) {
-    // `fetch` rejects with a TypeError when the request never left — offline,
-    // DNS failure, or a CORS rejection.
-    return new AppError(ErrorCode.NETWORK, undefined, { cause: error });
-  }
-
+  // NOTE: there is deliberately no `error instanceof TypeError` branch here.
+  //
+  // `fetch` does reject with a TypeError when the request never left — offline,
+  // DNS failure, a CORS rejection — but api.js `send()` already catches that at
+  // the call site and throws AppError(NETWORK). By the time anything reaches
+  // here, a genuine transport failure is ALREADY an AppError and returns above.
+  //
+  // So a TypeError arriving at this point is not a network problem. It is a bug
+  // in our own code. Mapping it to NETWORK told members to "check your
+  // connection" when the real fault was ours, and hid the defect from us: it is
+  // how a crash on every successful post submission survived seven phases.
+  // See docs/CURRENT_STATE.md, Phase 10 defect B1.
   return new AppError(ErrorCode.SERVER_ERROR, undefined, {
     cause: error instanceof Error ? error : undefined,
     details: { original: String(error) },

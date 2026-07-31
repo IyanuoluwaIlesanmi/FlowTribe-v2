@@ -32,7 +32,16 @@ import { AppError, ErrorCode, toAppError } from './errors.js';
 import { clearSession, getToken, touchSession } from './session.js';
 
 /** Actions that must never carry a token. */
-const PUBLIC_ACTIONS = new Set(['auth.register', 'auth.login', 'auth.checkUsername']);
+// Must mirror the four `capability: null` entries in appsscript/03_Router.gs.
+// `system.health` was missing, so health() — the probe used to confirm a
+// deployment — threw SESSION_EXPIRED locally for anyone not logged in and
+// never reached the server. That is exactly who runs it, and exactly when.
+const PUBLIC_ACTIONS = new Set([
+  'system.health',
+  'auth.register',
+  'auth.login',
+  'auth.checkUsername',
+]);
 
 /** Fired on the window when the server ends a session. */
 export const SESSION_EXPIRED_EVENT = 'flowtribe:session-expired';
