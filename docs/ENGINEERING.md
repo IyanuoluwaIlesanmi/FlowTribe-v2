@@ -189,7 +189,7 @@ FlowTribe-v2/
 │
 ├── tests/
 │   ├── backend.html             Harness — open in a browser
-│   ├── backend-suite.js         101 checks across 14 groups. Loaded as a
+│   ├── backend-suite.js         102 checks across 14 groups. Loaded as a
 │   │                            MODULE so it can import the real icon set
 │   ├── journeys.html            E2E: the REAL views against the REAL backend
 │   ├── journeys-suite.js        16 journeys. fetch routed into doPost; a
@@ -941,7 +941,7 @@ ES modules are subject to CORS — **`file://` will not work**.
 
 | Suite | Open | Proves |
 |---|---|---|
-| **101 checks, 14 groups** | `tests/backend.html` | The backend answers correctly |
+| **102 checks, 14 groups** | `tests/backend.html` | The backend answers correctly |
 | **16 journeys** | `tests/journeys.html` | The real views render those answers correctly |
 
 ## How it works

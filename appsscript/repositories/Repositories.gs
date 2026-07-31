@@ -447,8 +447,8 @@ var SubmissionRepo = (function () {
       platform: String(row[S.PLATFORM] || ''),
       contentLink: String(row[S.CONTENT_LINK] || ''),
       linkKey: String(row[S.LINK_KEY] || ''),
-      dayKey: String(row[S.DAY_KEY] || ''),
-      weekStart: String(row[S.WEEK_START] || ''),
+      dayKey: toDayKey_(row[S.DAY_KEY]),
+      weekStart: toDayKey_(row[S.WEEK_START]),
       weekNumber: Number(row[S.WEEK_NUMBER]) || 0,
       month: Number(row[S.MONTH]) || 0,
       year: Number(row[S.YEAR]) || 0,
@@ -614,7 +614,7 @@ var WeeklyStatsRepo = (function () {
     return {
       rowIndex: rowIndex,
       memberId: String(row[W.MEMBER_ID]),
-      weekStart: String(row[W.WEEK_START]),
+      weekStart: toDayKey_(row[W.WEEK_START]),
       postCount: Number(row[W.POST_COUNT]) || 0,
       distinctDays: Number(row[W.DISTINCT_DAYS]) || 0,
       goalAtWeek: Number(row[W.GOAL_AT_WEEK]) || DEFAULTS.WEEKLY_GOAL,
@@ -1008,6 +1008,29 @@ function toIso_(value) {
 
   var parsed = Date.parse(String(value));
   return isNaN(parsed) ? String(value) : new Date(parsed).toISOString();
+}
+
+/**
+ * Read a day or week key as the 'YYYY-MM-DD' string the application compares.
+ *
+ * `setupBootstrap` formats these columns as plain text so Sheets stores them
+ * verbatim, which is the real fix. This is the second line of defence, and it
+ * earns its place because the operator edits this spreadsheet by hand — that
+ * is a stated design goal, not an accident. Retyping a date into a cell
+ * without the text format re-creates a Date, and without this the value would
+ * silently match nothing: no error, just a member whose week stops counting.
+ *
+ * A Date read back from Sheets is midnight in the SPREADSHEET's timezone, so
+ * it is converted in TIMEZONE. Using the server's local zone would shift the
+ * key by a day for anyone west of Lagos.
+ *
+ * @param {*} value
+ * @returns {string} '' when empty, otherwise 'YYYY-MM-DD'
+ */
+function toDayKey_(value) {
+  if (!value) return '';
+  if (value instanceof Date) return FtWeek.dayKey(value, TIMEZONE);
+  return String(value);
 }
 
 function toBool_(value) {

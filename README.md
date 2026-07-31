@@ -7,7 +7,7 @@ Telegram community for creators and solopreneurs.
 > Feature complete for v1 — 11 member screens, 9 admin screens, 38 backend actions —
 > with the approved visual design applied, the frontend fully wired to the
 > backend, and every member journey verified end to end.
-> **101/101** backend checks and **16/16** journeys passing.
+> **102/102** backend checks and **16/16** journeys passing.
 > The one blocking item is the live deployment: see [`docs/deployment.md`](docs/deployment.md).
 
 ## Running it locally
@@ -30,7 +30,7 @@ The gallery renders every token and component on one page — it is the fastest 
 the design system.
 
 `backend.html` runs the whole backend against an in-memory fake of Google's APIs in about
-ten seconds and must read **101/101**. `journeys.html` then mounts the **real screens**
+ten seconds and must read **102/102**. `journeys.html` then mounts the **real screens**
 against that backend and must read **16/16** — it takes about 50 seconds, and it is the
 one that catches a view reading a field the API does not return. Three blocking crashes
 reached Phase 10 because the first suite cannot see what the second does.
@@ -89,7 +89,7 @@ FlowTribe-v2/
 ├── styles/        12 stylesheets — tokens.css is the single source of visual truth
 ├── scripts/       serve.ps1, the local static dev server
 ├── appsscript/    Google Apps Script backend (the real source of truth, not doc snippets)
-└── tests/         backend.html  — 101 checks against in-memory Google fakes
+└── tests/         backend.html  — 102 checks against in-memory Google fakes
                    journeys.html — 16 end-to-end journeys through the real views
 ```
 

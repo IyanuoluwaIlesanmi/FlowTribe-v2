@@ -107,7 +107,7 @@ Run the test suite and confirm it is green BEFORE touching anything:
   powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 
   Then open http://localhost:5173/tests/backend.html
-  Expected: 101/101 passing across 14 groups. Takes about ten seconds.
+  Expected: 102/102 passing across 14 groups. Takes about ten seconds.
 
   AND open http://localhost:5173/tests/journeys.html
   Expected: 16/16. Takes about 50 seconds.
@@ -115,7 +115,7 @@ Run the test suite and confirm it is green BEFORE touching anything:
   RUN BOTH. They prove different things. backend.html proves the backend
   answers correctly; journeys.html mounts the REAL SCREENS against those
   answers. Three blocking crashes reached Phase 10 — including a member
-  dashboard that had never once rendered — while backend.html read 101/101,
+  dashboard that had never once rendered — while backend.html read 102/102,
   because a test written from the response can only confirm the response.
 
   Also useful:
@@ -170,7 +170,7 @@ What was decided, and what was measured, is in FINAL_PRODUCT_DECISIONS.md
   - Satoshi ships Medium 500 and Bold 700 ONLY. Asking for 600 or 800 makes
     the browser synthesise a face, which smears at large numeral sizes.
 
-AFTER ANY WORK: re-run BOTH suites. backend.html must still be 101/101 and
+AFTER ANY WORK: re-run BOTH suites. backend.html must still be 102/102 and
 journeys.html must still be 16/16. A "visual" change that breaks a test was
 not a visual change.
 
@@ -220,7 +220,7 @@ WORKING AGREEMENT
   - If you believe a better approach exists, explain the trade-offs and ask.
   - Preserve existing functionality unless a change is explicitly approved.
   - Report honestly: distinguish what is VERIFIED from what is ASSUMED.
-    The previous session drew this line carefully — 101 checks prove our code
+    The previous session drew this line carefully — 102 checks prove our code
     against an in-memory fake of Google's APIs; they do not prove Apps
     Script's runtime, real latency, or the deployment. Keep that distinction.
   - Pause at the end of each phase and wait for review.
@@ -245,7 +245,7 @@ Everything a new session needs is in files, not in conversation:
 | Security posture with evidence | `security-review.md` |
 | How to deploy | `deployment.md` |
 | How to verify | `production-checklist.md` |
-| **Whether the backend works** | `tests/backend.html` — 101 checks |
+| **Whether the backend works** | `tests/backend.html` — 102 checks |
 | **Whether the SCREENS work** | `tests/journeys.html` — 16 journeys |
 
 The two suites together are the real safety net. Any future session can prove

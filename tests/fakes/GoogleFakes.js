@@ -209,7 +209,10 @@
       while (this._sheet._data.length <= rowIndex) this._sheet._data.push([]);
 
       for (var c = 0; c < values[r].length; c += 1) {
-        this._sheet._data[rowIndex][this._column + c - 1] = values[r][c];
+        this._sheet._data[rowIndex][this._column + c - 1] = coerceOnWrite(
+          values[r][c],
+          this._sheet._textColumns[this._column + c],
+        );
       }
     }
     return this;
@@ -219,17 +222,36 @@
     return this.setValues([[value]]);
   };
 
-  // Formatting is a no-op: it affects presentation only, and nothing in the
-  // backend reads it back.
-  ['setFontWeight', 'setBackground', 'setFontColor', 'setNumberFormat', 'setHorizontalAlignment']
+  // Most formatting is presentation only and nothing in the backend reads it
+  // back, so these stay no-ops.
+  ['setFontWeight', 'setBackground', 'setFontColor', 'setHorizontalAlignment']
     .forEach(function (name) {
       FakeRange.prototype[name] = function () { return this; };
     });
+
+  /**
+   * setNumberFormat is NOT a no-op.
+   *
+   * '@' means plain text, and in real Sheets that is what stops a value being
+   * parsed on write. The backend relies on it to keep the 366-character day
+   * map and the ISO date keys intact, so the fake has to model it or it cannot
+   * tell a protected column from an unprotected one.
+   */
+  FakeRange.prototype.setNumberFormat = function (format) {
+    if (format === '@') {
+      for (var c = 0; c < this._numColumns; c += 1) {
+        this._sheet._textColumns[this._column + c] = true;
+      }
+    }
+    return this;
+  };
 
   function FakeSheet(name) {
     this._name = name;
     this._data = [];
     this._frozen = 0;
+    // 1-based column index -> true when formatted as plain text.
+    this._textColumns = {};
   }
 
   FakeSheet.prototype.getName = function () { return this._name; };
@@ -259,6 +281,32 @@
     return Math.max(this.getLastColumn(), 30);
   };
 
+  /**
+   * Google Sheets PARSES what you write. A string that looks like a date
+   * becomes a Date value, and reading it back gives a Date object — not the
+   * string you wrote.
+   *
+   * The fake stored strings verbatim, so every `String(cell) === '2026-07-27'`
+   * comparison in the repositories passed here and failed in production. That
+   * fidelity gap is what let the WeeklyStats rollup bug reach a live
+   * spreadsheet with 101/101 checks green.
+   *
+   * A column explicitly formatted as plain text ('@') is exempt — which is
+   * precisely the mechanism the fix relies on.
+   */
+  function coerceOnWrite(value, isPlainText) {
+    if (isPlainText) return value;
+    if (typeof value !== 'string') return value;
+
+    // ISO date (2026-07-27) and ISO datetime — what Sheets turns into a Date.
+    if (/^\d{4}-\d{2}-\d{2}(T[\d:.]+Z?)?$/.test(value)) {
+      var parsed = new Date(value);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+
+    return value;
+  }
+
   FakeSheet.prototype.getRange = function (row, column, numRows, numColumns) {
     return new FakeRange(this, row, column, numRows || 1, numColumns || 1);
   };
@@ -268,7 +316,10 @@
   };
 
   FakeSheet.prototype.appendRow = function (values) {
-    this._data[this.getLastRow()] = values.slice();
+    var sheet = this;
+    this._data[this.getLastRow()] = values.map(function (value, index) {
+      return coerceOnWrite(value, sheet._textColumns[index + 1]);
+    });
     return this;
   };
 

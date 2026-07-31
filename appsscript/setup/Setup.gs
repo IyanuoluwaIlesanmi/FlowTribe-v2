@@ -91,14 +91,39 @@ function setupBootstrap() {
     sheet.setFrozenRows(1);
   });
 
-  // Text format on the day map, or Sheets coerces a 366-digit string into
-  // scientific notation and destroys it.
-  var calendar = spreadsheet.getSheetByName(SHEETS.ACTIVITY_CALENDAR);
-  calendar.getRange(2, AC.DAY_MAP + 1, calendar.getMaxRows() - 1, 1).setNumberFormat('@');
+  // ---- Columns that must survive a round trip unchanged --------------------
+  //
+  // Sheets PARSES what you write. Anything that looks like a number or a date
+  // comes back as a number or a Date, not as the string that was written.
+  // Every column below holds an OPAQUE KEY that the application compares with
+  // `===`, so a value Sheets has reinterpreted no longer matches itself.
+  //
+  // Plain text ('@') is what stops the parse. Formatting a column is therefore
+  // not cosmetic here — it is the storage contract.
+  function asText(sheetName, columnIndexZeroBased) {
+    var target = spreadsheet.getSheetByName(sheetName);
+    target
+      .getRange(2, columnIndexZeroBased + 1, target.getMaxRows() - 1, 1)
+      .setNumberFormat('@');
+  }
 
-  // Same for invite codes, which can look numeric.
-  var invites = spreadsheet.getSheetByName(SHEETS.INVITE_CODES);
-  invites.getRange(2, I.CODE + 1, invites.getMaxRows() - 1, 1).setNumberFormat('@');
+  // A 366-digit string becomes scientific notation and the member's whole year
+  // of activity is destroyed.
+  asText(SHEETS.ACTIVITY_CALENDAR, AC.DAY_MAP);
+
+  // Invite codes can look numeric.
+  asText(SHEETS.INVITE_CODES, I.CODE);
+
+  // ISO day and week keys (2026-07-27) become Date objects. These are joined
+  // and compared as strings — WeeklyStatsRepo.find() matches on WeekStart, and
+  // recordPost() filters submissions by it — so a coerced value silently
+  // matches nothing. That is what broke the WeeklyStats rollup in production
+  // while every in-memory check passed.
+  asText(SHEETS.WEEKLY_STATS, W.WEEK_START);
+  asText(SHEETS.SUBMISSIONS, S.DAY_KEY);
+  asText(SHEETS.SUBMISSIONS, S.WEEK_START);
+  asText(SHEETS.ACTIVITY_CALENDAR, AC.FIRST_ACTIVE);
+  asText(SHEETS.ACTIVITY_CALENDAR, AC.LAST_ACTIVE);
 
   var summary = 'Created: ' + (created.join(', ') || 'none') +
     ' | Verified: ' + (checked.join(', ') || 'none');

@@ -912,6 +912,42 @@ import { Icons } from '../src/lib/icons.js';
     });
   });
 
+  it('date keys are STORED as text, not as dates Sheets can reinterpret', function () {
+    // The production bug this guards: Sheets parses what you write, so an ISO
+    // date string comes back as a Date. Every `String(cell) === '2026-07-27'`
+    // comparison then matches nothing — WeeklyStatsRepo.find() returned null,
+    // upsert() returned null, and isPerfectWeek(null) threw. The whole rollup
+    // step failed on a live spreadsheet while every check here was green,
+    // because the fake stored strings verbatim.
+    //
+    // This asserts the RAW CELL, not the domain object. toDayKey_() normalises
+    // on read and would hide a missing column format — so a test that only
+    // checked the domain object would pass with the real protection removed.
+    var env = freshInstall();
+    ok('submission.create', { link: 'https://linkedin.com/posts/coercion' }, env.member.token);
+
+    var checks = [
+      [SHEETS.WEEKLY_STATS, W.WEEK_START, 'WeeklyStats.WeekStart'],
+      [SHEETS.SUBMISSIONS, S.DAY_KEY, 'Submissions.DayKey'],
+      [SHEETS.SUBMISSIONS, S.WEEK_START, 'Submissions.WeekStart'],
+    ];
+
+    checks.forEach(function (entry) {
+      var rows = SheetClient.readAll(entry[0]);
+      assert(rows.length > 0, entry[2] + ': expected at least one row');
+
+      var cell = rows[0][entry[1]];
+      assert(
+        !(cell instanceof Date),
+        entry[2] + ' was stored as a Date — the column lost its plain-text format',
+      );
+      assert(
+        /^\d{4}-\d{2}-\d{2}$/.test(String(cell)),
+        entry[2] + ' should read back as YYYY-MM-DD, got "' + String(cell) + '"',
+      );
+    });
+  });
+
   it('an unknown action is refused', function () {
     var env = freshInstall();
     var body = post('admin.doWhateverIWant', {}, env.admin.token);

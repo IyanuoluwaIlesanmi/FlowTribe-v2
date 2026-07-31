@@ -13,7 +13,7 @@ end to end through the real views. **Deployment-ready and not yet deployed.**
 
 | Suite | Result | Open |
 |---|---|---|
-| Backend checks | **101 / 101** | `tests/backend.html` |
+| Backend checks | **102 / 102** | `tests/backend.html` |
 | End-to-end journeys | **16 / 16** | `tests/journeys.html` |
 
 Run **both**. They prove different things, and Phase 10 exists because the
@@ -96,7 +96,7 @@ idempotency by `requestId` · `LockService` on every derived-state write ·
 
 ## Verification and tooling
 
-101 backend checks across 14 groups · **16 end-to-end journeys mounting the
+102 backend checks across 14 groups · **16 end-to-end journeys mounting the
 real views against the real backend** · in-memory Google fakes with real SHA-256 ·
 `setupSmokeTest()` (27 checks against a real spreadsheet, self-cleaning) ·
 `scripts/serve.ps1` · 20 documents
@@ -226,6 +226,61 @@ on an error state. It is mutation-tested: reintroducing B3 turns it red.
 
 ---
 
+# Phase 11 — the first production defect
+
+Found by `setupSmokeTest()` on the live spreadsheet. **This is the bug the
+smoke test exists to catch**, and it is the clearest example yet of the
+boundary between what a fake can prove and what it cannot.
+
+**Symptom.** `1 FAILED, 15 passed` — *"Submission accepted on the registered
+platform"* → `Rollups did not complete`, with
+`TypeError: Cannot read properties of null (reading 'postCount')` at
+`FtStreak.isPerfectWeek`.
+
+**Root cause. Google Sheets parses what you write.** An ISO date string
+(`2026-07-27`) is stored as a **Date**, and reading it back gives a Date
+object, not the string. Every `String(cell) === weekStart` comparison then
+matches nothing:
+
+1. `WeeklyStatsRepo.find()` compared `weekStart` — no match, returned `null`
+2. `upsert()` appended a row, re-read it with `find()`, got `null`, returned `null`
+3. `isPerfectWeek(null)` dereferenced `.postCount` and threw
+4. The pipeline caught it, set `statsSettling`, and the smoke test failed
+
+**Blast radius was wider than the crash.** `recordPost` also filters
+submissions by `row.weekStart === weekStart`, so `postCount` computed as **0**.
+With the fake made faithful, **11 checks fail**, not one: first-post milestone
+never unlocks, leaderboard rank is null, analytics trend is 0, active-this-week
+is 0.
+
+**Why it survived 101 green checks.** The in-memory fake stored strings
+verbatim. The author knew about coercion — `setupBootstrap` already forced
+plain text on `ActivityCalendar.DayMap` and `InviteCodes.Code` — but the date
+key columns were missed, and no test could see the difference.
+
+**The fix, in two layers.**
+
+| Layer | Change | Verified sufficient alone |
+|---|---|---|
+| **Write** (root cause) | `setupBootstrap` formats `WeeklyStats.WeekStart`, `Submissions.DayKey`, `Submissions.WeekStart`, and the calendar's first/last active columns as plain text `'@'` | ✅ |
+| **Read** (defence) | `toDayKey_()` converts a Date back to `YYYY-MM-DD` in `TIMEZONE`, used by the three date-key fields | ✅ |
+
+Both were mutation-tested independently. The read layer matters because **the
+operator edits this spreadsheet by hand** — a stated design goal — and retyping
+a date into a cell would otherwise reintroduce the bug silently.
+
+**The fake is now faithful.** `GoogleFakes.js` coerces date-like strings on
+write and honours `setNumberFormat('@')` as the exemption. Check **102** asserts
+the **raw stored cell** is text — deliberately, because a domain-object
+assertion passes even with the column format removed.
+
+⚠️ **This class of bug is not fully closed.** Any future column holding an
+opaque key that Sheets could parse — anything date-like or numeric-looking —
+needs `'@'` in `setupBootstrap`. The fake will now catch it; it could not
+before.
+
+---
+
 # Pending Decisions
 
 ## ✅ D0 — RESOLVED: design documents vs implementation
@@ -302,7 +357,7 @@ deployed, any further icon change is a manual spreadsheet edit.
 ```
 1. Read FINAL_PRODUCT_DECISIONS.md FIRST — it governs everything
 2. Read PROJECT_OVERVIEW.md, ENGINEERING.md, this file, and the three .docx files
-3. Open tests/backend.html   — confirm 101/101 before changing anything
+3. Open tests/backend.html   — confirm 102/102 before changing anything
 4. Open tests/journeys.html  — confirm 16/16. THIS is the one that catches
    a view reading a field the API does not return
 5. Deploy per deployment.md
@@ -331,7 +386,7 @@ Check `gallery.html` after each change — it renders every primitive on one
 page. It does **not** load `components-admin.css`; admin layout has to be
 checked on `admin.html`.
 
-**Re-run BOTH suites: `tests/backend.html` at 101/101 and
+**Re-run BOTH suites: `tests/backend.html` at 102/102 and
 `tests/journeys.html` at 16/16.** A visual change that breaks a journey was
 not a visual change.
 
