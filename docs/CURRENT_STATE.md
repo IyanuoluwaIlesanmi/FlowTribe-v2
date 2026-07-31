@@ -9,7 +9,7 @@
 **As of the end of Phase 9 M2.** Feature complete for v1, fully verified against
 an in-memory harness, **not yet deployed**.
 
-`97/97` automated checks passing. Open `tests/backend.html` to re-run them.
+`101/101` automated checks passing. Open `tests/backend.html` to re-run them.
 
 ---
 
@@ -87,7 +87,7 @@ idempotency by `requestId` · `LockService` on every derived-state write ·
 
 ## Verification and tooling
 
-97 checks across 13 groups · in-memory Google fakes with real SHA-256 ·
+101 checks across 14 groups · in-memory Google fakes with real SHA-256 ·
 `setupSmokeTest()` (27 checks against a real spreadsheet, self-cleaning) ·
 `scripts/serve.ps1` · 20 documents
 
@@ -256,7 +256,7 @@ deployed, any further icon change is a manual spreadsheet edit.
 ```
 1. Read FINAL_PRODUCT_DECISIONS.md FIRST — it governs everything
 2. Read PROJECT_OVERVIEW.md, ENGINEERING.md, this file, and the three .docx files
-3. Open tests/backend.html — confirm 97/97 before changing anything
+3. Open tests/backend.html — confirm 101/101 before changing anything
 4. Deploy per deployment.md
 5. Run setupSmokeTest() on the live project
 6. Work production-checklist.md
@@ -283,7 +283,7 @@ Check `gallery.html` after each change — it renders every primitive on one
 page. It does **not** load `components-admin.css`; admin layout has to be
 checked on `admin.html`.
 
-**Re-run `tests/backend.html`: it must still be 97/97.**
+**Re-run `tests/backend.html`: it must still be 101/101.**
 
 ## If starting the Brand & Content Pass
 

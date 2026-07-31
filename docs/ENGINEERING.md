@@ -189,7 +189,7 @@ FlowTribe-v2/
 │
 ├── tests/
 │   ├── backend.html             Harness — open in a browser
-│   ├── backend-suite.js         97 checks across 13 groups. Loaded as a
+│   ├── backend-suite.js         101 checks across 14 groups. Loaded as a
 │   │                            MODULE so it can import the real icon set
 │   ├── index.html / suite.js    Earlier pure-business-logic suite, kept as
 │   │                            reference. backend.html is the gate
@@ -933,7 +933,7 @@ ES modules are subject to CORS — **`file://` will not work**.
 
 # Testing Strategy
 
-**97 automated checks across 13 groups.** Open `tests/backend.html`.
+**101 automated checks across 14 groups.** Open `tests/backend.html`.
 
 ## How it works
 
@@ -949,10 +949,10 @@ action table a browser hits. No shortcuts around the request path.
 
 Load and wiring · setup · registration · authentication · authorisation ·
 submissions · milestones and levels · dashboard and leaderboard · admin ·
-integrity and recovery · **frontend contracts** · admin dashboard · production
-readiness.
+integrity and recovery · **frontend contracts** · admin dashboard ·
+**contract drift** · production readiness.
 
-Two techniques worth keeping:
+Three techniques worth keeping:
 
 - **The authorisation test is table-driven** — it iterates the action table and
   asserts a Member is refused everything beginning `admin.`. An admin endpoint
@@ -960,6 +960,37 @@ Two techniques worth keeping:
 - **The frontend-contract group asserts every field each screen destructures.**
   A shape mismatch does not throw; it renders `undefined` and looks like a
   styling bug. Three such mismatches were found by writing that group.
+- **The contract-drift group reads the frontend source over HTTP** and diffs it
+  against the live action table. It crawls the real import graph from both
+  entry points — static and dynamic, since every screen is lazily imported —
+  so a new file is covered the moment something imports it.
+
+### Why the contract-drift group exists
+
+Every finding in the Phase 9 integration audit was invisible to the suite as
+it stood: ten endpoints with no caller, three capabilities required by
+nothing, one documented endpoint that did not exist, and a PIN-reset flow that
+stranded the member. **None of it threw. None of it failed a test.** It was
+found by opening files side by side.
+
+The group now fails on:
+
+| Drift | Why it is otherwise silent |
+|---|---|
+| An action no frontend code calls | Nothing errors — the endpoint simply idles |
+| A frontend call with no handler | Returns `NOT_FOUND`, which reads like a network problem |
+| A capability granted but required by nothing | A grant nothing checks looks like a permission and is not one |
+| An action requiring a capability no role holds | Reads as a permissions bug rather than a typo |
+| A stale entry in `UNCALLED_BY_DESIGN` | The allowlist stops describing reality and starts excusing it |
+
+`UNCALLED_BY_DESIGN` in the suite **is** the documentation for deliberately
+unreachable endpoints. An action listed there is a decision; an action missing
+from it is an accident.
+
+⚠️ The capability check reads **both** the action table and inline
+`Authorize.check(...)` calls in the controllers. A table-only version reported
+`profile:read:all` as unused and would have had someone delete a real gate —
+it caught that in its first run.
 
 ## What it cannot prove
 

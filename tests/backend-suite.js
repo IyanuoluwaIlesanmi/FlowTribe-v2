@@ -1451,6 +1451,226 @@ import { Icons } from '../src/lib/icons.js';
      13. Production readiness
      ====================================================================== */
 
+  /* ======================================================================
+     Contract drift
+     ----------------------------------------------------------------------
+     Everything below was found by reading code by hand during the Phase 9
+     integration audit: ten endpoints with no caller, three capabilities
+     required by nothing, and a documented endpoint that did not exist. None
+     of it threw, none of it failed a test, and none of it was visible
+     without opening files side by side.
+
+     These checks make that audit repeatable. They read the FRONTEND SOURCE
+     over HTTP and diff it against the live action table, so drift in either
+     direction fails here instead of waiting for the next person to notice.
+     ====================================================================== */
+
+  describe('Contract drift');
+
+  /**
+   * Read a file synchronously.
+   *
+   * Synchronous XHR is deprecated and correctly so — but the suite is a
+   * synchronous IIFE that renders its results at the end, and this is a local
+   * harness reading local files, not production code on a member's phone.
+   * Restructuring the whole suite to async to avoid a lint warning would be
+   * the worse trade.
+   */
+  function readSource_(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, false);
+    xhr.send(null);
+    if (xhr.status !== 200 && xhr.status !== 0) {
+      throw new Error('cannot read ' + url + ' (HTTP ' + xhr.status + ')');
+    }
+    return xhr.responseText;
+  }
+
+  /**
+   * Every frontend module reachable from the two entry points.
+   *
+   * Crawls the real import graph — static AND dynamic, because every screen
+   * is lazily imported and a list that missed those would report most of the
+   * app as dead. Following the graph rather than hardcoding paths means a new
+   * file is covered the moment something imports it.
+   */
+  function crawlFrontend_() {
+    var origin = window.location.origin;
+    var queue = [origin + '/src/main.js', origin + '/src/admin.js'];
+    var seen = {};
+    var sources = {};
+
+    while (queue.length) {
+      var url = queue.shift();
+      if (seen[url]) continue;
+      seen[url] = true;
+
+      var text;
+      try {
+        text = readSource_(url);
+      } catch (error) {
+        continue;
+      }
+      sources[url] = text;
+
+      // `from './x.js'`, `import './x.js'`, and `import('./x.js')`.
+      var pattern = /(?:from|import)\s*\(?\s*['"](\.\.?\/[^'"]+)['"]/g;
+      var match;
+      while ((match = pattern.exec(text)) !== null) {
+        queue.push(new URL(match[1], url).href);
+      }
+    }
+
+    return sources;
+  }
+
+  /** Every action name passed to `call()` anywhere in the frontend. */
+  function frontendCalls_() {
+    var sources = crawlFrontend_();
+    var found = {};
+    var files = Object.keys(sources);
+
+    assert(files.length > 5, 'the crawler found almost nothing — it is broken, not the app');
+
+    files.forEach(function (url) {
+      var pattern = /\bcall\(\s*['"]([a-zA-Z][a-zA-Z0-9.]*)['"]/g;
+      var match;
+      while ((match = pattern.exec(sources[url])) !== null) found[match[1]] = true;
+    });
+
+    return found;
+  }
+
+  /**
+   * Actions with no frontend caller, and why that is deliberate.
+   *
+   * This list is the documentation. An action here is a decision someone
+   * made; an action missing from here is an accident. Adding an entry should
+   * feel like a small commitment, because it is one.
+   */
+  var UNCALLED_BY_DESIGN = {
+    'auth.session': 'Session is restored from localStorage; nothing needs to re-fetch it.',
+    'member.submissions': 'Paginated history. No "view all activity" screen is approved.',
+    'member.calendar': 'Range queries. The dashboard ships its own calendar window.',
+    'milestones.markSeen': 'Celebration is driven by newMilestones[] in the submission response; the Seen column has no reader.',
+    'profile.get': 'Stage 2 profile. The member-facing screen is deferred, not built.',
+    'profile.update': 'Stage 2 profile. Same.',
+    'admin.members.delete': 'Deliberately hard to reach. Deactivation is the normal path and deletion refuses when history exists.',
+  };
+
+  it('every action is either called by the frontend or documented as unused', function () {
+    var called = frontendCalls_();
+    var orphans = [];
+    var staleAllowlist = [];
+
+    Object.keys(getActionTable_()).forEach(function (action) {
+      if (called[action]) {
+        if (UNCALLED_BY_DESIGN[action]) staleAllowlist.push(action);
+        return;
+      }
+      if (!UNCALLED_BY_DESIGN[action]) orphans.push(action);
+    });
+
+    assert(orphans.length === 0,
+      'action(s) with no caller and no recorded reason: ' + orphans.join(', ') +
+      ' — wire them, remove them, or add them to UNCALLED_BY_DESIGN with a reason');
+
+    // A stale entry is the same bug pointed the other way: the list stops
+    // describing reality and starts excusing it.
+    assert(staleAllowlist.length === 0,
+      'UNCALLED_BY_DESIGN lists action(s) that ARE now called: ' + staleAllowlist.join(', '));
+  });
+
+  it('every action the frontend calls actually exists', function () {
+    var table = getActionTable_();
+    var missing = Object.keys(frontendCalls_()).filter(function (action) {
+      return !table[action];
+    });
+
+    // This one does not fail loudly in production either: the request returns
+    // NOT_FOUND and the screen shows a generic error, which reads like a
+    // network problem rather than a typo.
+    assert(missing.length === 0, 'frontend calls action(s) with no handler: ' + missing.join(', '));
+  });
+
+  /**
+   * Backend files that can enforce a capability.
+   *
+   * The action table is the primary gate, but it declares exactly one
+   * capability per action — so an endpoint needing a second one checks it
+   * inline. `admin.members.get` does: the record is gated by
+   * `member:read:all` and the contact details by `profile:read:all`.
+   *
+   * A check that only read the table would call that second capability
+   * unused and demand its removal, which would delete a real gate. It has to
+   * look where enforcement actually happens.
+   */
+  var ENFORCING_SOURCES = [
+    '/appsscript/controllers/Controllers.gs',
+    '/appsscript/services/CoreServices.gs',
+    '/appsscript/services/DomainServices.gs',
+    '/appsscript/orchestrators/Orchestrators.gs',
+    '/appsscript/middleware/Middleware.gs',
+  ];
+
+  /** Capabilities passed to an inline `Authorize.check(...)`. */
+  function inlineCapabilityChecks_() {
+    var found = {};
+
+    ENFORCING_SOURCES.forEach(function (path) {
+      var text = readSource_(window.location.origin + path);
+      var pattern = /Authorize\.check\([^,]+,\s*['"]([a-zA-Z][a-zA-Z0-9:._-]*)['"]/g;
+      var match;
+      while ((match = pattern.exec(text)) !== null) found[match[1]] = true;
+    });
+
+    return found;
+  }
+
+  it('every declared capability is required by an action', function () {
+    var required = inlineCapabilityChecks_();
+    var table = getActionTable_();
+
+    Object.keys(table).forEach(function (action) {
+      var capability = table[action].capability;
+      if (capability) required[capability] = true;
+    });
+
+    // `authenticated` is special-cased in Authorize and deliberately absent
+    // from the matrix; it means "any signed-in member" rather than a grant.
+    var unused = [];
+    [ROLES.MEMBER, ROLES.COMMUNITY_MANAGER, ROLES.SUPER_ADMIN].forEach(function (role) {
+      capabilitiesFor_(role).forEach(function (capability) {
+        if (!required[capability] && unused.indexOf(capability) === -1) unused.push(capability);
+      });
+    });
+
+    assert(unused.length === 0,
+      'capability granted but required by no action: ' + unused.join(', ') +
+      ' — a grant nothing checks is not a permission');
+  });
+
+  it('capabilities required by actions are all grantable', function () {
+    // The reverse: an action requiring a capability no role holds is
+    // unreachable by everyone, including the Super Admin, and would look like
+    // a permissions bug rather than a typo.
+    var grantable = {};
+    [ROLES.MEMBER, ROLES.COMMUNITY_MANAGER, ROLES.SUPER_ADMIN].forEach(function (role) {
+      capabilitiesFor_(role).forEach(function (capability) { grantable[capability] = true; });
+    });
+
+    var ungrantable = [];
+    var table = getActionTable_();
+    Object.keys(table).forEach(function (action) {
+      var capability = table[action].capability;
+      if (!capability || capability === 'authenticated') return;
+      if (!grantable[capability]) ungrantable.push(action + ' -> ' + capability);
+    });
+
+    assert(ungrantable.length === 0,
+      'action(s) require a capability no role holds: ' + ungrantable.join(', '));
+  });
+
   describe('Production readiness');
 
   it('the production smoke test passes end to end', function () {

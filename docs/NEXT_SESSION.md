@@ -107,7 +107,7 @@ Run the test suite and confirm it is green BEFORE touching anything:
   powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 
   Then open http://localhost:5173/tests/backend.html
-  Expected: 97/97 passing across 13 groups.
+  Expected: 101/101 passing across 14 groups.
 
   Also useful:
     http://localhost:5173/              member app
@@ -157,7 +157,7 @@ What was decided, and what was measured, is in FINAL_PRODUCT_DECISIONS.md
   - Satoshi ships Medium 500 and Bold 700 ONLY. Asking for 600 or 800 makes
     the browser synthesise a face, which smears at large numeral sizes.
 
-AFTER ANY VISUAL WORK: re-run tests/backend.html. It must still be 97/97.
+AFTER ANY VISUAL WORK: re-run tests/backend.html. It must still be 101/101.
 A "visual" change that breaks a test was not a visual change.
 
 Note: gallery.html does NOT load styles/components-admin.css. Admin-only
@@ -206,7 +206,7 @@ WORKING AGREEMENT
   - If you believe a better approach exists, explain the trade-offs and ask.
   - Preserve existing functionality unless a change is explicitly approved.
   - Report honestly: distinguish what is VERIFIED from what is ASSUMED.
-    The previous session drew this line carefully — 97 checks prove our code
+    The previous session drew this line carefully — 101 checks prove our code
     against an in-memory fake of Google's APIs; they do not prove Apps
     Script's runtime, real latency, or the deployment. Keep that distinction.
   - Pause at the end of each phase and wait for review.
@@ -231,7 +231,7 @@ Everything a new session needs is in files, not in conversation:
 | Security posture with evidence | `security-review.md` |
 | How to deploy | `deployment.md` |
 | How to verify | `production-checklist.md` |
-| **Whether it still works** | `tests/backend.html` — 97 checks |
+| **Whether it still works** | `tests/backend.html` — 101 checks |
 
 The test suite is the real safety net. Any future session can prove the system
 is intact in about ten seconds, before changing a line.
