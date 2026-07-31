@@ -19,8 +19,10 @@
   min-height: var(--ft-tap-target);
   padding: var(--ft-space-3) var(--ft-space-5);
   border-radius: var(--ft-radius-md);
+  /* Design System: buttons are Satoshi Medium 16px. */
+  font-family: var(--ft-font-display);
   font-size: var(--ft-text-md);
-  font-weight: var(--ft-weight-semibold);
+  font-weight: var(--ft-weight-medium);
   line-height: 1;
   text-align: center;
   white-space: nowrap;

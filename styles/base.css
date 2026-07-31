@@ -14,14 +14,20 @@ body {
 }
 
 /* ---- Headings -------------------------------------------------------------
-   Tight leading and slightly negative tracking at large sizes. Default type
-   metrics look loose and unconsidered above ~24px. */
+   Satoshi, per the Design System. Tight leading and slightly negative
+   tracking at large sizes — default type metrics look loose and
+   unconsidered above ~24px.
+
+   Weight follows the specified scale rather than being uniform: the two
+   largest steps are Bold, and Card (22px) and Subheading (18px) are
+   Medium. A 22px heading set Bold competes with the section above it. */
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
+  font-family: var(--ft-font-display);
   font-weight: var(--ft-weight-bold);
   line-height: var(--ft-leading-tight);
   letter-spacing: var(--ft-tracking-tight);
@@ -30,8 +36,8 @@ h6 {
 
 h1 { font-size: var(--ft-text-3xl); }
 h2 { font-size: var(--ft-text-2xl); }
-h3 { font-size: var(--ft-text-xl); }
-h4 { font-size: var(--ft-text-lg); }
+h3 { font-size: var(--ft-text-xl); font-weight: var(--ft-weight-medium); }
+h4 { font-size: var(--ft-text-lg); font-weight: var(--ft-weight-medium); }
 h5 { font-size: var(--ft-text-md); }
 h6 { font-size: var(--ft-text-sm); }
 

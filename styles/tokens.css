@@ -121,31 +121,49 @@
   --ft-border-brand:   var(--ft-burgundy-600);
 
   /* ---- Typography ------------------------------------------------------
-     System stack by default: nothing to download, nothing to block first
-     paint, and it already looks native on every device. --ft-font-display
-     is wired to Baloo 2 for numerals and the logo; if the font files are
-     absent it falls back cleanly, so the app never depends on them.
-     See styles/fonts.css. */
+     Satoshi for headings, cards, statistics and buttons. Inter for body,
+     forms, tables, labels, navigation and admin. Both self-hosted — see
+     styles/fonts.css.
+
+     The system stack stays as the fallback on every variable, so a failed
+     or blocked font request degrades to something native rather than to
+     nothing. --ft-font-brand is the logo lockup, which the Design System
+     puts on Satoshi alongside the headings.
+
+     ⚠️ INTER SITS SECOND IN --ft-font-display ON PURPOSE. Satoshi has no
+     ẹ ọ Ẹ Ọ ṣ — the Yoruba subdot letters — and headings render member
+     names. Without Inter in second place those glyphs fall through to a
+     system serif and break mid-name. With it, the browser substitutes
+     per-glyph from a face that is already loaded and looks closely
+     related. Verified by measurement, not assumed. Do not reorder. */
   --ft-font-sans:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-  --ft-font-display: 'Baloo 2', var(--ft-font-sans);
-  --ft-font-brand:   'Poppins', var(--ft-font-sans);
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --ft-font-display: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, sans-serif;
+  --ft-font-brand:   var(--ft-font-display);
   --ft-font-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Type scale — 1.200 (minor third), rounded to whole pixels.
-     Small enough steps that a dense admin table and a hero number can
-     share one scale. */
-  --ft-text-2xs: 0.6875rem; /* 11px */
-  --ft-text-xs:  0.75rem;   /* 12px */
-  --ft-text-sm:  0.875rem;  /* 14px */
-  --ft-text-md:  1rem;      /* 16px — body; also the iOS no-zoom threshold */
-  --ft-text-lg:  1.125rem;  /* 18px */
-  --ft-text-xl:  1.375rem;  /* 22px */
-  --ft-text-2xl: 1.625rem;  /* 26px */
-  --ft-text-3xl: 2rem;      /* 32px */
-  --ft-text-4xl: 2.5rem;    /* 40px */
+  /* Type scale — the Design System's eight sizes, plus two the document
+     does not enumerate but real components need:
+
+       Caption 12 · Small 14 · Body 16 · Subheading 18 · Card 22 ·
+       Section 28 · Page 36 · Hero 48
+
+     2xs (11px) survives for the bottom-nav labels, where 12px wraps at
+     375px. 5xl (52px) survives for the progress-ring numeral, which sits
+     above the Hero size by design — it is the largest thing on the
+     dashboard and the one number a member looks for first. */
+  --ft-text-2xs: 0.6875rem; /* 11px — nav labels only */
+  --ft-text-xs:  0.75rem;   /* 12px — Caption */
+  --ft-text-sm:  0.875rem;  /* 14px — Small */
+  --ft-text-md:  1rem;      /* 16px — Body; also the iOS no-zoom threshold */
+  --ft-text-lg:  1.125rem;  /* 18px — Subheading */
+  --ft-text-xl:  1.375rem;  /* 22px — Card title */
+  --ft-text-2xl: 1.75rem;   /* 28px — Section title */
+  --ft-text-3xl: 2.25rem;   /* 36px — Page title */
+  --ft-text-4xl: 3rem;      /* 48px — Hero */
   --ft-text-5xl: 3.25rem;   /* 52px — the progress-ring number */
 
   --ft-weight-regular:  400;
