@@ -1,0 +1,1049 @@
+# Flow Tribe — Engineering
+
+Everything needed to continue development. Written so another engineer can pick
+this up cold.
+
+> ## ⚠️ [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) governs
+>
+> **Everything documented below is FROZEN.** Architecture, auth, RBAC, schema,
+> API contracts, backend logic, frontend behaviour, and navigation flow are the
+> source of truth and must not be changed or refactored without explicit owner
+> approval.
+>
+> The three `.docx` design documents are authoritative for **visual design
+> only** — colours, typography, tokens, spacing, radius, shadows, icons,
+> illustrations, animations, responsive polish.
+>
+> Where a design document describes different *behaviour*, **this document
+> wins**. Those conflicts are already resolved and closed in
+> `FINAL_PRODUCT_DECISIONS.md` §5.
+
+> **Related docs.** [`PROJECT_OVERVIEW.md`](PROJECT_OVERVIEW.md) ·
+> [`CURRENT_STATE.md`](CURRENT_STATE.md) · [`deployment.md`](deployment.md) ·
+> [`security-review.md`](security-review.md) ·
+> [`data-dictionary.md`](data-dictionary.md) · [`decisions.md`](decisions.md)
+
+---
+
+# Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  STATIC FRONT END  (Netlify — no build step)             │
+│                                                          │
+│  index.html  →  src/main.js   member SPA  (10 screens)   │
+│  admin.html  →  src/admin.js  admin SPA   (9 screens)    │
+│  gallery.html                 component gallery (dev)    │
+│                                                          │
+│  Vanilla ES modules · hash router · lazy-loaded views     │
+└────────────────────────┬─────────────────────────────────┘
+                         │  POST, text/plain carrying JSON
+                         │  session token in the body
+┌────────────────────────▼─────────────────────────────────┐
+│  GOOGLE APPS SCRIPT  (one doPost entry point)            │
+│                                                          │
+│  Router → Middleware → Controller → Orchestrator →       │
+│           Service → Repository → SheetClient             │
+│                         ↓                                │
+│                    lib/  (pure, testable, no APIs)       │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────┐
+│  GOOGLE SHEETS  — 14 tabs                                │
+│  Submissions is the ledger. Everything else is derived   │
+│  and can be rebuilt from it.                             │
+└──────────────────────────────────────────────────────────┘
+```
+
+## The five constraints that shaped everything
+
+Every structural decision traces to one of these. If you are wondering "why is
+it done this way", the answer is almost always here.
+
+| Constraint | Consequence |
+|---|---|
+| Cost must be ≈ zero (₦1,000/mo product) | Sheets + Apps Script, not a real database |
+| The operator is not a developer | Data must be readable and fixable in a spreadsheet |
+| Apps Script has **no module system** | 20 files share one global scope, loaded alphabetically |
+| Apps Script gives **two entry points**, no paths | The action name in the body does the routing |
+| Deployment must be `ANYONE_ANONYMOUS` | **There is no network boundary.** Authorisation is entirely application code |
+
+## Layering and dependency direction
+
+```
+Router → Middleware → Controller → Orchestrator → Service → Repository → Sheets
+                                        ↓             ↓
+                                      lib/  (pure — depends on nothing)
+```
+
+Rules, enforced by review:
+
+- A controller never touches a repository. It calls orchestrators or services.
+- A service never touches a sheet. It calls repositories.
+- A repository never calls a service. It maps rows to objects and back.
+- `lib/` imports nothing and is imported by everything.
+- Only `infra/` names a Google API.
+
+**Why the repository boundary earns its ceremony:** it is the store-swap seam.
+If Sheets is outgrown, `Repositories.gs` is rewritten and every other layer is
+untouched. That is what makes committing to Sheets a reversible decision.
+
+---
+
+# Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| Front end | Vanilla ES modules, no framework | 19 screens, no build step, no toolchain to maintain |
+| Styling | Plain CSS with custom properties | Design tokens in one file; no preprocessor |
+| Routing | Hash-based, hand-rolled (~200 lines) | Works on any static host with no rewrite rules |
+| Charts | **Hand-rolled SVG** | **Locked decision — do not replace with Chart.js or any library** |
+| Backend | Google Apps Script (V8) | Free, native Sheets access |
+| Database | Google Sheets, 14 tabs | Free, operator-editable |
+| Hosting | Netlify Drop (or any static host) | Free, drag-and-drop |
+| Tests | Custom browser harness + in-memory Google fakes | No Node available on the dev machine |
+
+**Zero runtime dependencies.** No npm packages ship. No `node_modules` in
+production. Nothing to `npm install` before making a change.
+
+---
+
+# Folder Structure
+
+```
+FlowTribe-v2/
+├── index.html                 Member app shell
+├── admin.html                 Admin app shell
+├── gallery.html               Component gallery (dev tool)
+│
+├── src/
+│   ├── main.js                Member entry: session → shell → router
+│   ├── admin.js               Admin entry: guard → nav → router
+│   ├── gallery.js             Gallery (dev only)
+│   │
+│   ├── core/                  The ~1,400-line framework substitute
+│   │   ├── dom.js               el() · svg() · icon() · on() · trapFocus()
+│   │   ├── component.js         The component contract
+│   │   ├── store.js             Observable state
+│   │   ├── router.js            Hash router, guards, lazy views
+│   │   ├── api.js               THE ONLY FILE THAT CALLS fetch()
+│   │   ├── session.js           Token storage, expiry, cross-tab sync
+│   │   ├── errors.js            AppError + the code taxonomy
+│   │   ├── config.js            git-ignored — holds the deployment URL
+│   │   └── config.example.js    Committed template
+│   │
+│   ├── components/
+│   │   ├── ui/                  button · field · input · pin-input · select
+│   │   │                        modal · toast · primitives (card, badge,
+│   │   │                        avatar, spinner, skeleton, empty, switch)
+│   │   ├── brand/               logo · progress-ring · stat-card
+│   │   │                        success-burst · activity-calendar · milestone
+│   │   └── layout/              app-shell · top-bar · bottom-nav
+│   │                            page-header · section · mode-switch
+│   │
+│   ├── features/                One folder per screen
+│   │   ├── auth/                login · register · welcome
+│   │   ├── dashboard/           dashboard
+│   │   ├── submit/              submit
+│   │   ├── leaderboard/         leaderboard
+│   │   ├── milestones/          milestones + celebration modal
+│   │   ├── levels/              levels
+│   │   ├── profile/             profile
+│   │   └── admin/               overview · members · member-detail
+│   │                            submissions · leaderboard · analytics
+│   │                            invites · settings · audit · shared
+│   │
+│   ├── lib/                     format · validators · platforms
+│   │                            icons · catalog
+│   └── app/navigation.js        Router registry, so views can navigate
+│
+├── styles/                    12 files, loaded as separate <link> tags
+│   ├── tokens.css               EVERY colour, space, radius, shadow, duration
+│   ├── fonts.css                System stack; @font-face ready but commented
+│   ├── reset.css   base.css   animations.css   utilities.css
+│   └── components-{ui,brand,layout,calendar,views,admin}.css
+│
+├── appsscript/                20 files, 7,600 lines
+│   ├── 00_Config.gs             Sheet names, column maps, enums, defaults
+│   ├── 01_Errors.gs             AppError, ERROR_MESSAGES
+│   ├── 02_Envelope.gs           Request parse, response shape, logging
+│   ├── 03_Router.gs             doPost, the ACTION TABLE, dispatch
+│   ├── lib/                     PURE — FtWeek · FtDayMap · FtStreak
+│   │                            FtLink · FtIdentity · FtAchievements
+│   ├── infra/Infra.gs           SheetClient · CacheClient · LockClient
+│   │                            Crypto · Ids · Logger_
+│   ├── repositories/            14 repositories, one per sheet
+│   ├── services/                CoreServices + DomainServices
+│   ├── middleware/              Validate · RateLimit · Authenticate
+│   │                            PinGate · Authorize · CAPABILITIES
+│   ├── orchestrators/           Pipeline · RegistrationFlow · LoginFlow
+│   │                            SubmissionFlow · WeekCloseFlow
+│   ├── controllers/             Auth · Member · Profile · Submission
+│   │                            Leaderboard · Admin
+│   ├── jobs/Jobs.gs             Reconcile + 6 trigger entry points
+│   └── setup/                   Setup.gs · SmokeTest.gs
+│
+├── tests/
+│   ├── backend.html             Harness — open in a browser
+│   ├── backend-suite.js         94 checks across 13 groups
+│   └── fakes/GoogleFakes.js     In-memory SpreadsheetApp, CacheService,
+│                                LockService, PropertiesService, real SHA-256
+│
+├── scripts/serve.ps1          Static dev server (no Node/Python on this machine)
+├── assets/                    images · icons · fonts · vendor
+└── docs/                      20 markdown documents
+```
+
+---
+
+# Frontend Architecture
+
+## The component contract
+
+The whole convention, and it fits in a paragraph:
+
+> **A component is a function that takes props and returns an `HTMLElement`.**
+
+```js
+export function Badge({ label, tone = 'neutral' }) {
+  return el('span', { class: `ft-badge ft-badge--${tone}`, text: label });
+}
+```
+
+A component that changes after creation attaches `update`. One that owns
+listeners attaches `destroy`. `stateful()` wires both and tracks teardown:
+
+```js
+export function Counter(props) {
+  const node = el('span', { text: props.count });
+  return stateful(node, {
+    update: (next) => { node.textContent = next.count; },
+    cleanups: [on(window, 'resize', handleResize)],
+  });
+}
+```
+
+### Three rules that keep it from becoming a framework
+
+1. **A component never fetches.** Props in, callbacks out. Otherwise business
+   logic moves into the UI.
+2. **A component never reads the store.** Views wire the store to components.
+3. **Text goes through `text:` / `textContent`. Never `innerHTML`.**
+
+## Why never `innerHTML`
+
+This is a **security rule**, not a style preference.
+
+Session tokens live in `localStorage`, readable by any script on the origin. So
+the app's safety rests on having no XSS. Full names, usernames, bios, and links
+are member-controlled and render on **admin** screens, where a payload would
+execute with an administrator's session.
+
+Routing every string through `textContent` makes that bug class *structurally
+impossible* rather than merely absent. `el()` does this by construction:
+strings become text nodes, always.
+
+## Routing
+
+Hash-based (`#/dashboard`), because the app is served as static files. A
+path-based router needs host rewrite rules — one more thing to configure
+correctly and get wrong.
+
+Views load via dynamic `import()`, so a screen's code arrives when first
+visited. Guards run **before** the module is fetched, so a redirect never pays
+to download a screen it will not show.
+
+**Guards are UX, not security.** They stop someone landing on a screen that
+would render empty. Every action is authorised server-side regardless.
+
+## State management
+
+Deliberately minimal. There is no global store for view data.
+
+| State | Where |
+|---|---|
+| Session (token, member, capabilities) | `core/session.js` — a `createStore` observable, mirrored to `localStorage`, synced across tabs via the `storage` event |
+| Screen data | Local to the view function. Fetched on mount, held in closure |
+| Component state | Inside the component, via `stateful()` |
+
+**Why no global data store:** every screen loads its own data in one call and
+owns it. A cache layer would add invalidation bugs for no benefit at this size.
+The server already caches for 60 seconds.
+
+---
+
+# Backend Architecture
+
+## Load order — the rule that breaks Apps Script projects
+
+Apps Script concatenates every file into **one global scope**, alphabetically
+by name. There is no import graph.
+
+> **Nothing may run at the top level of a file except declarations.**
+
+A file that calls `SettingsService.get()` at load time fails unpredictably
+depending on where it sorts. Every module is an IIFE that only *defines*
+functions; nothing executes until called.
+
+Numeric prefixes (`00_`, `01_`, `02_`, `03_`) make the order that matters
+explicit.
+
+## Naming conventions
+
+| Thing | Convention | Example |
+|---|---|---|
+| Modules | PascalCase object | `MemberService.findById()` |
+| Private functions | Trailing underscore | `dispatch_()`, `fail_()` |
+| Pure libs | `Ft` prefix | `FtWeek`, `FtDayMap` |
+| Column maps | Short uppercase | `M.PIN_HASH`, `S.WEEK_START` |
+| CSS classes | `ft-block__element--modifier` | `ft-stat__value--empty` |
+| CSS variables | `--ft-category-name` | `--ft-burgundy-600` |
+
+The `ft-` prefix everywhere means a copied snippet or future third-party
+stylesheet cannot collide.
+
+## The orchestration layer
+
+Added after the Phase 3 review found `SubmissionService` coordinating seven
+collaborators inside one method. Flows are now **explicit step lists** run by
+`Pipeline`:
+
+```js
+Pipeline.run('submission', [
+  { name: 'appendLedger',      run: (ctx) => { … } },
+  { name: 'updateCalendar',    run: (ctx) => { … } },
+  { name: 'updateWeeklyStats', run: (ctx) => { … } },
+  { name: 'updateCounters',    run: (ctx) => { … } },
+  { name: 'evaluateMilestones',run: (ctx) => { … } },
+  { name: 'evaluateLevel',     run: (ctx) => { … } },
+  { name: 'invalidateCaches',  run: (ctx) => { … } },
+], context);
+```
+
+Order is declared rather than implied. Each step is individually replaceable.
+Per-step timing comes free. A future celebration feature is a list entry, not a
+longer method.
+
+---
+
+# Google Apps Script Architecture
+
+## The submission transaction — the busiest path
+
+```
+VALIDATE  (outside the lock — most failures happen here, and a rejected
+           duplicate should neither wait on nor hold a lock)
+  URL parses → platform matches → not a duplicate → under daily cap
+
+LOCK (LockService, per member)
+  1  Append to Submissions        ← LEDGER FIRST
+  2  Update the day map            one character
+  3  Update weekly stats           count, distinct days, goalMet
+  4  Update member counters        ONE batched write
+  5  Evaluate milestones
+  6  Evaluate Flow Level
+  7  Invalidate caches
+UNLOCK
+
+RETURN { submission, stats, newMilestones[], levelUp? }
+```
+
+**Why the ledger is written first.** If a later step fails, the fact exists and
+the rollups lag — a `ROLLUP_PENDING` audit row lets the 15-minute repair job
+close the gap. The reverse order would produce counters describing a post that
+does not exist.
+
+**Why counters are one batched write.** Each separate `setValues` is a round
+trip at 100–300 ms. Four of them is the difference between a 1-second and a
+3-second response on the path a member is actively waiting on.
+
+**Why stats come back in the same response.** This is what makes "the dashboard
+updates immediately" true rather than probable. v1 waited on a 1300 ms
+`setTimeout` and hoped.
+
+## Background jobs
+
+| Job | When | Purpose | Recovery |
+|---|---|---|---|
+| `jobWeeklyRollover` | Mon 00:05 | Freeze ranks, award Top 10 / Weekly Champion, update streaks | Idempotent by `weekStart` |
+| `jobNightlyReconcile` | 01:00 | Rebuild every derived value from the ledger | **Cursor-based and resumable** |
+| `jobRollupRepair` | every 15 min | Repair members marked `ROLLUP_PENDING` | Retries indefinitely |
+| `jobSessionSweep` | 02:00 | Delete expired sessions | Stateless |
+| `jobInviteExpiry` | 02:15 | Mark stale codes expired | Cosmetic — redemption also checks |
+| `jobDailyRollup` | 23:00 | Snapshot daily numbers to `CommunityStats` | Missing point in a chart |
+
+**Why the rollover runs after the boundary, not on it.** A member on Monday
+morning has zero posts. Evaluating streaks at midnight would reset every streak
+in the community every week. A streak breaks when a week *closes* unmet.
+
+**Why the reconcile is resumable from day one.** Apps Script terminates at six
+minutes with no warning. A truncated reconcile leaves some members repaired and
+others not, **with no signal** — the worst kind of failure, because it is
+invisible.
+
+---
+
+# HTML Frontend Integration
+
+## The transport, and three non-obvious decisions
+
+| Decision | Reason |
+|---|---|
+| `POST` only | v1 sent PINs in GET query strings — into browser history, referrer headers, and execution logs |
+| `Content-Type: text/plain` carrying JSON | **Looks wrong, is deliberate.** `application/json` makes the request non-simple → CORS preflight → Apps Script does not answer `OPTIONS` → the request dies. `text/plain` stays a simple request |
+| **Not** `mode: 'no-cors'` | v1 used it, making every response opaque. Members saw a success tick for posts that were never written |
+| `redirect: 'follow'` | Apps Script 302s to `googleusercontent.com`, which serves the actual payload |
+| Every response is HTTP 200 | Apps Script cannot set status codes, and its own errors are HTML. Status lives in the envelope's `ok` flag |
+
+## Envelope
+
+```jsonc
+// request
+{ "action": "submission.create", "token": "…", "payload": {…},
+  "requestId": "uuid", "clientVersion": "2.0.0" }
+
+// success
+{ "ok": true, "data": {…}, "meta": { "serverTime": "…", "sessionExpiresAt": "…" } }
+
+// failure
+{ "ok": false, "error": { "code": "DUPLICATE_LINK",
+                          "message": "You've already logged this post.",
+                          "field": "link" } }
+```
+
+`message` is member-facing copy already in the brand voice and is displayed
+verbatim.
+
+## `src/core/api.js` is the only file that calls `fetch`
+
+It attaches the token, unwraps the envelope, throws typed `AppError`s, retries
+**once** on transport failure only, and raises two window events handled
+globally in `main.js` / `admin.js`:
+
+- `flowtribe:session-expired` → clear session, route to login
+- `flowtribe:must-change-pin` → route to the PIN change screen
+
+Never retries a business failure — a rejected PIN fails identically the second
+time and wastes the member's time.
+
+---
+
+# Authentication Flow
+
+## Registration (invite-gated, 3 steps)
+
+```
+Cheap validation OUTSIDE the lock
+  username format · PIN policy · PIN match · name · platform · goal
+        ↓
+┌── LockService.withLock('registration') ────────────────┐
+│  1  Invite exists? unused? unexpired?                  │
+│  2  UsernameKey free?                                  │
+│  3  Insert member  (Role ALWAYS 'Member')              │
+│  4  Mark invite used                                   │
+│  5  Seed calendar year                                 │
+│  6  Evaluate milestones → Founding Member              │
+└────────────────────────────────────────────────────────┘
+        ↓
+Create session (outside the lock — no contended state)
+```
+
+**Why one lock covers steps 1–4.** Two check-then-act races live here: the same
+code redeemed twice, and the same username claimed twice. Sheets has no unique
+constraints, so the lock is the only thing preventing a duplicate. Grouping
+them also means **a failed registration never burns a valid code**.
+
+**`Role` is never read from the payload.** If registration accepted a role,
+anyone with an invite could create a Super Admin.
+
+## Login
+
+```
+Look up by UsernameKey
+  not found → hash anyway against a throwaway salt, then AUTH_FAILED
+              (equal timing — otherwise response time reveals valid usernames)
+Throttle check (exponential backoff)      → ACCOUNT_LOCKED
+Status check                              → ACCOUNT_INACTIVE
+Constant-time PIN compare                 → AUTH_FAILED, record failure
+Success → clear failures, create session
+```
+
+`AUTH_FAILED` is **identical** for an unknown username and a wrong PIN. The
+distinction hands an attacker a list of valid usernames.
+
+## PIN hashing
+
+```
+stored = iterate( HMAC-SHA256(pin + salt, pepper), 600 )
+```
+
+| Element | Location |
+|---|---|
+| Plain PIN | Nowhere — never stored, logged, or returned |
+| Salt | `Members.PinSalt`, 16 random bytes per member |
+| **Pepper** | **`PropertiesService`** — never in a sheet, never in the repo |
+
+Apps Script offers no bcrypt/scrypt/Argon2 — only SHA-family digests and HMAC.
+This is the strongest construction available.
+
+**The pepper matters most.** Salt and iteration slow someone who already has
+the hashes; the pepper means having them is not enough — and a leaked
+spreadsheet is by far the likeliest way they would be obtained.
+
+## Sessions
+
+| Property | Value |
+|---|---|
+| Token | 256-bit random, opaque |
+| Server storage | **SHA-256 hash only** |
+| Client storage | `localStorage` |
+| Absolute expiry | 30 days |
+| Idle expiry | 14 days |
+| `LastSeenAt` write | Throttled to once per 5 min |
+
+**Why a session table and not a signed self-contained token.** A signed token
+cannot be revoked. Suspension, PIN reset, and demotion must all terminate
+sessions *now*. The usual workaround is a revocation denylist — which is a
+session table with extra steps.
+
+---
+
+# Authorization (Roles & Permissions)
+
+## Capabilities, never role comparisons
+
+Code asks *"does this session hold `member:delete`?"* — never *"is this role
+`SuperAdmin`?"* A fourth role becomes one entry in `CAPABILITIES` and zero
+changes elsewhere. Scattered `if (role === …)` checks are where privilege bugs
+live.
+
+| Capability group | Member | Community Manager | Super Admin |
+|---|:--:|:--:|:--:|
+| `dashboard:self`, `submission:create`, `leaderboard:read`, `profile:*:self`, `pin:update:self` | ✅ | ✅ | ✅ |
+| `admin:overview:read`, `member:read:all`, `member:update`, `member:status:set`, `member:pin:reset`, `submission:read:all`, `submission:void`, `analytics:read`, `invite:*`, `settings:read` | ❌ | ✅ | ✅ |
+| `member:delete`, `member:role:set`, `settings:update`, `audit:read` | ❌ | ❌ | ✅ |
+
+**Community Managers hold every Member capability** — they are members with
+their own streaks, and the "My Dashboard" switch takes them there.
+
+## The enforcement chain
+
+```
+1. Validate    payload shape                   → VALIDATION_FAILED
+2. RateLimit   BEFORE auth                     → RATE_LIMITED
+3. Authenticate token → session → member       → SESSION_EXPIRED
+4. PinGate     MustChangePin set?              → MUST_CHANGE_PIN
+5. Authorize   capability vs. FRESH role       → FORBIDDEN
+6. Controller
+7. Audit       if anything mutated
+```
+
+**Rate limiting before authentication** is deliberate: verifying a PIN runs an
+iterated hash. An attacker who could force that work before being throttled has
+a DoS vector.
+
+**The role is re-read from `Members` every request.** `Sessions.Role` is a
+diagnostic snapshot, never an authorisation input. A demotion takes effect on
+the very next request.
+
+**Scope cannot be tampered with.** Member-scoped actions derive the target from
+the session. There is no payload field in which to ask for someone else's data.
+
+## Invariants no UI can express
+
+Enforced in the service/controller layer, not the interface:
+
+1. **No self-escalation** — `setRole` refuses when actor equals target.
+2. **The last Super Admin is protected** — any change leaving zero is refused.
+   Without this one misclick locks everyone out permanently.
+3. **Deletion refuses with history** — deactivation offered instead.
+4. **`MustChangePin` blocks everything** but the change and logout. An admin who
+   resets a PIN knows the temporary value.
+
+---
+
+# Database Schema
+
+14 tabs. Full field-level detail in [`data-dictionary.md`](data-dictionary.md).
+
+| Sheet | Purpose | Growth |
+|---|---|---|
+| `Members` | Identity, credentials, materialised counters. **Hot** — read every request | ~60 rows |
+| `Profiles` | Stage 2 optional PII. **Cold** | ~60 rows |
+| `InviteCodes` | Single-use registration codes | low hundreds |
+| `Sessions` | Active sessions, hashed ids | swept nightly |
+| `Submissions` | **THE LEDGER — append-only, the only source of truth** | ~800/month |
+| `ActivityCalendar` | Packed 366-char day map per member-year | ~60/year |
+| `WeeklyStats` | Per member-week counts, goalMet, RankFinal | ~240/month |
+| `MilestoneCatalog` | 16 definitions (data, not code) | static |
+| `MemberMilestones` | Unlock records | grows slowly |
+| `FlowLevels` | 6 level definitions | static |
+| `Settings` | Configurable operational values | ~15 rows |
+| `AuditLog` | Append-only action record | grows |
+| `Notifications` | Outbox — written, nothing delivers yet | grows |
+| `CommunityStats` | Daily rollups for analytics | 365/year |
+
+## Three schema decisions worth understanding
+
+**Identity split three ways.** `MemberID` (immutable key) · `UsernameKey`
+(unique credential) · `FullName` (display, duplicable). This removes v1's
+deepest flaw, where a free-text name was the join key and a typo silently
+forked someone's streak.
+
+**The packed day map.** `ActivityCalendar.DayMap` is a fixed **366-character**
+string, one digit per day of the year. Sixty rows carry a year of activity for
+the whole community; reading a member's year is one cell, recording a post is
+one character. Always 366 regardless of leap year, so index arithmetic never
+branches.
+
+⚠️ **The column must be formatted as plain text** or Sheets coerces it to
+scientific notation and destroys it. `setupBootstrap` does this.
+
+**`WeekStart` rather than (ISO week, year).** ISO week 1 can contain days from
+the previous December and some years have 53 weeks. A Monday date has no New
+Year edge cases. `WeekNumber` is stored separately for display only.
+
+## Denormalisation, and why it is safe
+
+`Members` stores `AllTimePosts`, `CurrentWeekStreak`, `LongestWeekStreak`,
+`PerfectWeeks`. These are a **cache, never the truth** — recomputed on every
+write and rebuilt nightly from `Submissions`.
+
+**Without the reconcile job, storing derived values would be a mistake.** With
+it, a hand-edited cell self-heals within a day, and `RollupRepair` closes a
+failed write within fifteen minutes.
+
+---
+
+# Data Models
+
+Repositories return domain objects, never raw rows. No layer above ever sees a
+column index.
+
+```js
+// Member (Repositories.gs → MemberRepo.toDomain)
+{ rowIndex, memberId, username, usernameKey, fullName,
+  pinHash, pinSalt, platform, weeklyGoal, joinDate,
+  status, role, consentFeature, mustChangePin, profileComplete,
+  inviteCodeUsed, failedLoginCount, nextAttemptAt,
+  allTimePosts, currentWeekStreak, longestWeekStreak, perfectWeeks,
+  lastSubmissionDate, flowLevelId, flowLevelAt }
+
+// Submission
+{ submissionId, timestamp, memberId, name, username, platform,
+  contentLink, linkKey, dayKey, weekStart, weekNumber,
+  month, year, goalAtSubmission, status }
+
+// The milestone/level snapshot — the interface between services and lib/
+{ allTimePosts, activeDays, goalsMetCount, perfectWeeks,
+  currentWeekStreak, longestWeekStreak,
+  postsThisWeek, distinctDaysThisWeek, weeklyGoal,
+  isFoundingMember, bestRankFinal }
+```
+
+⚠️ **The snapshot field names are a contract.** A mismatch does not throw — the
+evaluator is skipped and the milestone silently never unlocks. This happened
+twice during development. `setupVerify()` now cross-checks catalog IDs against
+evaluator IDs in both directions.
+
+---
+
+# API Endpoints
+
+**39 actions.** One `doPost`. Full spec in [`api.md`](api.md).
+
+## Public (exactly 4 — a fifth should require an argument)
+
+`system.health` · `auth.checkUsername` · `auth.register` · `auth.login`
+
+## Member
+
+| Action | Returns |
+|---|---|
+| `auth.session` `auth.logout` `auth.changePin` | — |
+| `member.dashboard` | **Everything in one call** — member, level, week, calendar, milestones, stats, leaderboard, recent |
+| `member.profile` | Profile screen in one call |
+| `member.submissions` `member.calendar` | Paginated history / calendar range |
+| `member.updateConsent` `member.updateName` | — |
+| `submission.create` | `{ submission, stats, newMilestones[], levelUp? }` |
+| `milestones.list` `milestones.markSeen` `levels.list` | — |
+| `leaderboard.get` | `{ entries, rank, unrankedCount }` |
+| `profile.get` `profile.update` | Stage 2 fields |
+
+## Admin (17)
+
+`admin.overview` · `admin.analytics` · `admin.members.{list,get,update,setStatus,resetPin,setRole,delete,reconcile}` · `admin.invites.{create,list,revoke}` · `admin.submissions.{list,void}` · `admin.settings.{get,update}` · `admin.audit.list`
+
+**Note:** `admin.members.create` is declared in the capability table but has no
+handler — member creation is invite-only. See Known Issues.
+
+---
+
+# Services
+
+| Service | Owns |
+|---|---|
+| `SettingsService` | Typed, cached, defaulted config accessors |
+| `AuditService` | Append audit rows (never throws — an audit failure must not fail the action) |
+| `NotificationService` | Enqueue outbox rows |
+| `AuthService` | PIN hashing, verification, policy, **exponential backoff** |
+| `SessionService` | Create, resolve, slide, revoke |
+| `InviteService` | Generate (bulk), validate, redeem, revoke, expire |
+| `MemberService` | Public shape, self-service updates, PIN change, counters |
+| `ProfileService` | Stage 2 data |
+| `CalendarService` | Day map read/write, range slicing, year rebuild |
+| `WeeklyStatsService` | Weekly counts, distinct days, week streaks |
+| `LeaderboardService` | Ranked standings, resolves level name/icon per row |
+| `MilestoneService` | Snapshot building, evaluation, persistence, summary |
+| `FlowLevelService` | Level determination and change detection |
+| `SubmissionService` | Link validation, dedupe, row building |
+| `AnalyticsService` | Overview metrics + 7 chart series |
+
+---
+
+# Utilities
+
+## Pure libraries (`appsscript/lib/` — no Apps Script APIs)
+
+| Module | Responsibility |
+|---|---|
+| `FtWeek` | Day/week keys, Africa/Lagos boundaries, ISO week numbers |
+| `FtDayMap` | Pack/unpack the 366-char map, active-day counting |
+| `FtStreak` | Week streaks, competition ranking, `isPerfectWeek` |
+| `FtLink` | URL parse, **registrable-domain** platform matching, normalisation |
+| `FtIdentity` | Username policy, PIN policy, invite normalisation, backoff curve |
+| `FtAchievements` | 16 milestone evaluators + level evaluation |
+
+Each ends with:
+```js
+if (typeof module !== 'undefined') module.exports = FtWeek;
+```
+Apps Script has no `module`, so the guard makes the line inert there — while
+letting a Node harness require the same file. **This is what makes the streak
+and milestone logic testable before it ever meets a spreadsheet.**
+
+## Front-end libraries (`src/lib/`)
+
+`format.js` (dates in the community timezone, pluralisation, initials, URL
+shortening) · `validators.js` (**format checks only**) · `platforms.js`
+(**display metadata only — deliberately NOT the hostname allowlist**) ·
+`icons.js` (inline SVG path data) · `catalog.js` (category order and labels).
+
+### The line that is never crossed
+
+Format checks may be mirrored client-side for instant feedback. **Judgements
+may not.** Link-to-platform matching, duplicate detection, streak arithmetic,
+milestone evaluation, and ranking are server-only, **because they judge the
+member and must not be editable by the person being judged.**
+
+---
+
+# Environment Variables
+
+Apps Script has no `.env`. Configuration lives in **Script Properties**.
+
+| Property | Set by | Purpose |
+|---|---|---|
+| `FT_PIN_PEPPER` | setup, automatically | **Never change or delete.** Changing it invalidates every PIN |
+| `FT_SESSION_KEY` | setup, automatically | Changing it logs everyone out |
+| `FT_ADMIN_FULLNAME` / `_USERNAME` / `_PLATFORM` | operator | Founder account |
+| `FT_ADMIN_PIN` | operator → **auto-deleted after use** | Founder's first PIN |
+| `FT_SPREADSHEET_ID` | optional | Point at a specific sheet (staging) |
+| `FT_RECONCILE_CURSOR` | job, automatically | Resume point for a partial reconcile |
+
+## Front-end configuration
+
+`src/core/config.js` — **git-ignored**, copied from `config.example.js`.
+
+Holds `api.baseUrl` (the `/exec` URL), timeouts, `app.timezone`, and client
+mirrors of PIN/username rules. **Nothing secret** — the URL is public by
+necessity, which is exactly why every action is authorised server-side.
+
+⚠️ `config.app.timezone` **must match** `appsscript.json`'s timezone. A mismatch
+means the client and server disagree about which week a Sunday-evening post
+belongs to.
+
+---
+
+# Configuration
+
+Operational values live in the `Settings` sheet, so they change without a
+deploy: PIN length, hash iterations, max failed attempts, session absolute/idle
+days, duplicate window, daily cap, invite expiry and code length, default
+weekly goal, calendar weeks, founding-member cutoff, and
+`metrics.consistencyScore.enabled` (ships `FALSE` — the metric is **paused**
+pending an agreed definition, and is absent from the response rather than
+stubbed).
+
+`DEFAULTS` in `00_Config.gs` is the fallback when a row is missing.
+
+---
+
+# Error Handling
+
+## Four classes
+
+| Class | Member sees | Logged |
+|---|---|---|
+| Validation | The specific message, field highlighted | No |
+| Business rule | The specific message | If security-relevant |
+| Platform (Sheets timeout, quota) | Generic | Full detail |
+| Bug | Generic | Full stack |
+
+## The whole strategy in one line
+
+**An expected failure is a typed `AppError`. An unexpected one is loud in the
+log and silent to the member.** Anything reaching the router that is not an
+`AppError` is a bug: logged with its stack, returned as `SERVER_ERROR`.
+
+Every generic failure returns the **identical** message, so nothing about
+internal structure can be inferred by probing. `error.internal` is logged and
+**never serialised** to the client.
+
+## Platform failures
+
+| Failure | Handling |
+|---|---|
+| Lock timeout | Retry once, then `SERVER_ERROR`. **Never proceed without the lock** |
+| Sheets read timeout | One retry — reads are idempotent |
+| **Sheets write timeout** | **No blind retry.** Re-read to determine whether it landed. A retried append duplicates a submission |
+| Cache unavailable | Fall through to the sheet. Cache is never truth |
+| Missing sheet / header mismatch | Fail loudly with an internal message naming `setupBootstrap()` |
+
+## Partial failure in the submission path
+
+Ledger written, later step failed → write a `ROLLUP_PENDING` audit row, return
+the submission as the **success it was**, and set `statsSettling: true`. The
+client keeps showing previous numbers rather than wrong ones. `RollupRepair`
+closes the gap within 15 minutes.
+
+**Telling a member their post failed when it did not is the exact v1 defect
+this rebuild exists to eliminate.**
+
+## Recovery hierarchy
+
+1. Nightly reconcile rebuilds everything from the ledger
+2. `RollupRepair` every 15 minutes on explicit markers
+3. Manual per-member reconcile from the admin UI
+4. **The ledger alone can reconstruct every other sheet**
+
+---
+
+# Logging
+
+`Logger_` writes structured lines to the Apps Script execution log:
+`Logger_.info/warn/error(scope, message, details)`.
+
+`AuditLog` records: logins and failures, lockouts, registration, PIN changes
+and resets, role and status changes, deletions, voided submissions, invite
+create/redeem/revoke, settings changes, **admin profile reads**,
+`ROLLUP_PENDING`, and job completion.
+
+**Never logged: PINs or tokens in any form, including failures.** A log that
+records what someone typed as a wrong PIN is a log of near-miss credentials.
+
+`ActorRole` is on every row, which is why a separate admin log is unnecessary.
+
+---
+
+# Security Considerations
+
+Full review with evidence in [`security-review.md`](security-review.md).
+
+**The central assumption: there is no network boundary.** Everything protecting
+this application is application code.
+
+| Control | Implementation |
+|---|---|
+| PIN storage | Iterated HMAC-SHA256 + per-member salt + server-side pepper |
+| PIN comparison | Constant-time |
+| Sessions | Opaque 256-bit token, stored hashed, revocable |
+| Authorisation | Capability check per action, role re-read every request |
+| Rate limiting | Exponential backoff per account (**no IP available**) |
+| **Formula injection** | `SheetClient.sanitise` escapes `= + - @` at the write boundary |
+| XSS | No `innerHTML` anywhere, architecturally |
+| Link validation | Registrable-domain suffix matching |
+| Audit | Append-only, credential-free, PII reads logged |
+
+## Accepted residual risks
+
+A 6-digit PIN is not a password · no IP-based limiting (invite-gating
+substitutes) · `localStorage` is XSS-readable · an admin can read all PII ·
+**spreadsheet sharing is the operator's responsibility and cannot be enforced
+in code** · no self-service PIN recovery.
+
+---
+
+# Performance Considerations
+
+| Concern | Mitigation |
+|---|---|
+| Sheets has no indexes | Full scans of ~60 rows are trivial; aggregates cached 60s |
+| Round-trip cost (100–300 ms) | Batched `getValues`/`setValues`; never cell-by-cell |
+| Dashboard cold read | One call assembling 6 sources; cached, invalidated on write |
+| Ledger growth | Analytics read `CommunityStats` rollups, not the ledger |
+| Mobile payload | No framework; views lazy-loaded; admin code never reaches members |
+| 6-minute execution ceiling | Reconcile is cursor-based and resumable |
+
+⚠️ **The submission latency budget is estimated, not measured.** Extrapolated
+at 1.5–3s from documented platform behaviour. `Pipeline` logs per-step timing,
+so the first live run produces real numbers. Agreed fallback if it exceeds 3s:
+move milestone and level evaluation out of the lock into a post-commit step.
+
+---
+
+# Deployment Process
+
+Full walkthrough in [`deployment.md`](deployment.md); pre-launch verification in
+[`production-checklist.md`](production-checklist.md).
+
+```
+1. Create a blank Google Sheet
+2. Extensions ▸ Apps Script → paste 20 files (order matters) → replace manifest
+3. Script Properties: FT_ADMIN_FULLNAME / _USERNAME / _PIN / _PLATFORM
+4. Run setupAll()  → secrets, 14 sheets, catalog, admin, triggers, verify
+   Expect: "OK — 14 sheets, 39 actions, secrets set, Super Admin present."
+5. Deploy ▸ New deployment ▸ Web app · Execute as Me · Access ANYONE
+6. Run setupSmokeTest()  → expect "ALL 27 CHECKS PASSED"
+7. config.js ← the /exec URL, then drag the folder to Netlify
+```
+
+⚠️ **Updating code is not enough.** You must publish a **new version** of the
+existing deployment (`Deploy ▸ Manage deployments ▸ pencil ▸ New version`). A
+*new deployment* creates a *new URL* and leaves everyone on old code.
+
+## Local development
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
+```
+Then `http://localhost:5173/` (member), `/admin.html`, `/gallery.html`,
+`/tests/backend.html`.
+
+ES modules are subject to CORS — **`file://` will not work**.
+
+---
+
+# Testing Strategy
+
+**94 automated checks across 13 groups.** Open `tests/backend.html`.
+
+## How it works
+
+`tests/fakes/GoogleFakes.js` implements in-memory `SpreadsheetApp`,
+`CacheService`, `LockService`, `PropertiesService`, `ScriptApp`,
+`ContentService`, and a **real SHA-256 / HMAC-SHA256**. The backend loads as
+plain `<script>` tags — mirroring how Apps Script concatenates it.
+
+**Every test posts through `doPost`.** Same envelope, middleware chain, and
+action table a browser hits. No shortcuts around the request path.
+
+## What it proves
+
+Load and wiring · setup · registration · authentication · authorisation ·
+submissions · milestones and levels · dashboard and leaderboard · admin ·
+integrity and recovery · **frontend contracts** · admin dashboard · production
+readiness.
+
+Two techniques worth keeping:
+
+- **The authorisation test is table-driven** — it iterates the action table and
+  asserts a Member is refused everything beginning `admin.`. An admin endpoint
+  added later without a capability **fails automatically**.
+- **The frontend-contract group asserts every field each screen destructures.**
+  A shape mismatch does not throw; it renders `undefined` and looks like a
+  styling bug. Three such mismatches were found by writing that group.
+
+## What it cannot prove
+
+Apps Script's own runtime · real Sheets latency · quota behaviour · genuine
+lock contention (the fake is single-threaded) · the deployment configuration.
+
+**`setupSmokeTest()` closes most of that gap** the moment it runs on the real
+project.
+
+---
+
+# Assumptions
+
+## Product
+
+1. ~60 members, comfortable to ~200. Beyond that, revisit full-scan reads.
+2. The community is trusting — a PIN is a convenience credential, not a
+   password.
+3. Members have WhatsApp (invite delivery) but not necessarily email.
+4. Africa/Lagos for everyone. **Not multi-timezone.**
+5. One platform per member, fixed at registration.
+
+## Technical
+
+6. Google Sheets and Apps Script remain free at this scale.
+7. Members use a modern browser supporting ES modules and `:has()`.
+8. The operator can follow written steps but is not a developer.
+9. Netlify or an equivalent static host.
+10. `localStorage` is available (private browsing is handled gracefully).
+
+## Data
+
+11. `Submissions` is the only true record; everything else is rebuildable.
+12. Multiple posts on one day count as **one active day**.
+13. A member changing platforms keeps their history under the old platform.
+14. Deleted members are rare; deactivation is the normal path.
+
+---
+
+# Known Issues
+
+| # | Issue | Severity | Notes |
+|---|---|---|---|
+| ~~K1~~ | ~~Design docs diverge from the build~~ | **RESOLVED** | Closed by [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md). Implementation governs behaviour; docs govern appearance. **Not a defect** |
+| K2 | `admin.members.create` capability exists with no handler | Low | Member creation is invite-only. Either wire it or drop the capability |
+| K3 | Submission latency unmeasured | Medium | Instrumented; first live run gives real numbers |
+| K4 | Lock contention untested under real concurrency | Low | Fake is single-threaded |
+| K5 | Notification outbox has no delivery worker | Low | By design — rows accumulate so nothing is lost when delivery is added |
+| K6 | `Members` full-scan per lookup | Low | Trivial at 60 rows; revisit at ~500 |
+| K7 | Idempotency key is client-supplied | Medium | Bounded by daily cap and duplicate-link detection |
+| K8 | No self-service PIN recovery | Low | Admin reset; error copy names the path |
+| K9 | Brand fonts not self-hosted | Low | System stack; `@font-face` blocks ready in `fonts.css` |
+| K10 | `gallery.html` and `tests/` ship unless removed | Trivial | Contain no data |
+
+---
+
+# Remaining Engineering Tasks
+
+## Blocking launch
+
+1. **Deploy and run `setupSmokeTest()`** — 30 minutes.
+2. **Visual Design Pass** — scope defined exactly in
+   [`FINAL_PRODUCT_DECISIONS.md`](FINAL_PRODUCT_DECISIONS.md) §4.
+
+   Roughly in order of cost:
+   - `styles/tokens.css` — replace the colour anchors, regenerate the scales
+   - `assets/fonts/` — add Satoshi and Inter `.woff2`, uncomment the
+     `@font-face` blocks in `styles/fonts.css`, repoint the font variables
+   - Modal radius 28px → 24px
+   - `src/lib/icons.js` — add the specified milestone and level icons, remap
+     `MilestoneCatalog.IconID` and `FlowLevels.IconID` (**sheet data, no
+     deploy needed**)
+   - Icon sizing per context (nav 24 · buttons 20 · cards 24 · stats 28 ·
+     empty 64 · feature 80)
+   - Empty-state illustrations
+   - **Desktop left sidebar navigation** — the largest change. Routes and
+     guards must not change; if they would, stop and raise it
+
+   **The suite must stay at 94/94.** A visual change that breaks a test was
+   not a visual change.
+
+## After the first deploy
+
+3. Record real submission and dashboard latency; apply the agreed fallback if
+   over budget.
+4. Brand & Content Pass — replace placeholder copy.
+5. Resolve K2.
+
+## Deferred, seams already in place
+
+Member Settings screen · profile photos (`avatar` already accepts `src`;
+`Profiles` takes a column) · notification delivery · self-service PIN recovery
+· export (members, submissions, audit) · content-based idempotency (K7) ·
+splitting `MemberService` into three (Phase 3 review W3).

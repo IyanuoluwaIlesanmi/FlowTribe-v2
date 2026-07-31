@@ -1,0 +1,52 @@
+/* ==========================================================================
+   Flow Tribe — Fonts
+   --------------------------------------------------------------------------
+   The app ships on the system font stack. Nothing is downloaded, nothing
+   blocks first paint, and the UI looks native on every device.
+
+   WHY NOT GOOGLE FONTS
+   v1 loaded Baloo 2 and Poppins from fonts.googleapis.com. That is a
+   render-blocking request to a third party on every page load, it leaks
+   every member's IP to Google, and the page renders unstyled if the CDN is
+   unreachable. The same reasoning that led us to vendor Chart.js locally
+   applies here.
+
+   ADDING THE BRAND FONTS LATER
+   Baloo 2 (display numerals, logo) and Poppins (logo chips) are part of the
+   brand. To self-host them:
+
+     1. Download the woff2 files and place them in assets/fonts/
+     2. Uncomment the @font-face blocks below
+     3. Nothing else changes — --ft-font-display and --ft-font-brand in
+        tokens.css already point at these families and fall back to the
+        system stack until the files exist.
+
+   Both use font-display: swap, so text is readable immediately and
+   reflows once the font arrives rather than hiding until it does.
+   ========================================================================== */
+
+/*
+@font-face {
+  font-family: 'Baloo 2';
+  src: url('../assets/fonts/baloo2-variable.woff2') format('woff2-variations');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/poppins-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/poppins-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+*/

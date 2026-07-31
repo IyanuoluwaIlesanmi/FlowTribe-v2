@@ -1,0 +1,258 @@
+/* ==========================================================================
+   Flow Tribe — Design Tokens
+   --------------------------------------------------------------------------
+   The single source of truth for every visual value in the application.
+   Nothing outside this file may declare a raw colour, shadow, radius,
+   duration, or font stack. Components consume these variables only.
+
+   Naming: --ft-<category>-<name>
+   Scales run 50 (lightest) to 900 (darkest), matching common design-system
+   convention so a designer can read them without a legend.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand: burgundy -------------------------------------------------
+     600 is the brand colour carried over from v1 (#6E1320). The scale is
+     built around it so we can tint and shade without inventing values
+     ad hoc, which is how v1 ended up with three different pinks. */
+  --ft-burgundy-50:  #fbeef0;
+  --ft-burgundy-100: #f7dce0;
+  --ft-burgundy-200: #eeb9c1;
+  --ft-burgundy-300: #e08c99;
+  --ft-burgundy-400: #c9546b;
+  --ft-burgundy-500: #a32a42;
+  --ft-burgundy-600: #6e1320;  /* brand */
+  --ft-burgundy-700: #5e0f1b;
+  --ft-burgundy-800: #530e18;
+  --ft-burgundy-900: #3d0a12;
+
+  /* ---- Brand: gold -----------------------------------------------------
+     400 is the brand gold (#EAA00C). Gold is an accent, never a surface:
+     it marks progress and achievement so those moments stay special. */
+  --ft-gold-50:  #fef8e7;
+  --ft-gold-100: #fdefc4;
+  --ft-gold-200: #fadf8c;
+  --ft-gold-300: #f5c94a;
+  --ft-gold-400: #eaa00c;  /* brand */
+  --ft-gold-500: #c9860a;
+  --ft-gold-600: #a06a08;
+  --ft-gold-700: #7a5106;
+  --ft-gold-800: #573a04;
+  --ft-gold-900: #3a2603;
+
+  /* ---- Neutrals --------------------------------------------------------
+     Warm-tinted rather than pure grey. A cold grey next to burgundy reads
+     as a mistake; these carry a trace of the brand hue so the palette
+     feels like one decision. */
+  --ft-neutral-0:   #ffffff;
+  --ft-neutral-25:  #fcfafa;
+  --ft-neutral-50:  #f8f6f6;
+  --ft-neutral-100: #f1eeee;
+  --ft-neutral-200: #e4dfdf;
+  --ft-neutral-300: #cfc8c8;
+  --ft-neutral-400: #a79e9e;
+  --ft-neutral-500: #7d7373;
+  --ft-neutral-600: #5c5353;
+  --ft-neutral-700: #423b3b;
+  --ft-neutral-800: #2b2626;
+  --ft-neutral-900: #1a1616;
+
+  /* ---- Status ----------------------------------------------------------
+     Deliberately muted. A bright validation red beside burgundy fights the
+     brand; these sit alongside it. */
+  --ft-success-50:  #eaf6ee;
+  --ft-success-500: #1f7a3d;
+  --ft-success-700: #165c2d;
+  --ft-warning-50:  #fdf4e3;
+  --ft-warning-500: #b7791f;
+  --ft-warning-700: #8a5b16;
+  --ft-danger-50:   #fbeceb;
+  --ft-danger-500:  #c0392b;
+  --ft-danger-700:  #8f2a20;
+  --ft-info-50:     #eaf1f9;
+  --ft-info-500:    #2b6cb0;
+  --ft-info-700:    #1f5185;
+
+  /* ---- Semantic surfaces ----------------------------------------------
+     Components reference these, never the raw scales above. Swapping a
+     theme means overriding this block alone. */
+  --ft-bg-page:        var(--ft-neutral-25);
+  --ft-bg-surface:     var(--ft-neutral-0);
+  --ft-bg-raised:      var(--ft-neutral-0);
+  --ft-bg-sunken:      var(--ft-neutral-50);
+  --ft-bg-brand-soft:  var(--ft-burgundy-50);
+  --ft-bg-brand:       var(--ft-burgundy-600);
+  --ft-bg-overlay:     rgba(26, 22, 22, 0.55);
+
+  --ft-text-primary:   var(--ft-neutral-900);
+  --ft-text-secondary: var(--ft-neutral-600);
+  --ft-text-muted:     var(--ft-neutral-500);
+  --ft-text-inverse:   var(--ft-neutral-0);
+  --ft-text-brand:     var(--ft-burgundy-600);
+  --ft-text-accent:    var(--ft-gold-500);
+
+  --ft-border-subtle:  var(--ft-neutral-200);
+  --ft-border-default: var(--ft-neutral-300);
+  --ft-border-strong:  var(--ft-neutral-400);
+  --ft-border-brand:   var(--ft-burgundy-600);
+
+  /* ---- Typography ------------------------------------------------------
+     System stack by default: nothing to download, nothing to block first
+     paint, and it already looks native on every device. --ft-font-display
+     is wired to Baloo 2 for numerals and the logo; if the font files are
+     absent it falls back cleanly, so the app never depends on them.
+     See styles/fonts.css. */
+  --ft-font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --ft-font-display: 'Baloo 2', var(--ft-font-sans);
+  --ft-font-brand:   'Poppins', var(--ft-font-sans);
+  --ft-font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Type scale — 1.200 (minor third), rounded to whole pixels.
+     Small enough steps that a dense admin table and a hero number can
+     share one scale. */
+  --ft-text-2xs: 0.6875rem; /* 11px */
+  --ft-text-xs:  0.75rem;   /* 12px */
+  --ft-text-sm:  0.875rem;  /* 14px */
+  --ft-text-md:  1rem;      /* 16px — body; also the iOS no-zoom threshold */
+  --ft-text-lg:  1.125rem;  /* 18px */
+  --ft-text-xl:  1.375rem;  /* 22px */
+  --ft-text-2xl: 1.625rem;  /* 26px */
+  --ft-text-3xl: 2rem;      /* 32px */
+  --ft-text-4xl: 2.5rem;    /* 40px */
+  --ft-text-5xl: 3.25rem;   /* 52px — the progress-ring number */
+
+  --ft-weight-regular:  400;
+  --ft-weight-medium:   500;
+  --ft-weight-semibold: 600;
+  --ft-weight-bold:     700;
+  --ft-weight-extra:    800;
+
+  --ft-leading-tight:   1.15;
+  --ft-leading-snug:    1.3;
+  --ft-leading-normal:  1.5;
+  --ft-leading-relaxed: 1.65;
+
+  --ft-tracking-tight:  -0.02em;
+  --ft-tracking-normal: 0;
+  --ft-tracking-wide:   0.04em;
+  --ft-tracking-widest: 0.14em;
+
+  /* ---- Spacing — 4px base ---------------------------------------------
+     Every margin, padding, and gap comes from here. A consistent rhythm is
+     most of what separates "designed" from "assembled". */
+  --ft-space-0:  0;
+  --ft-space-1:  0.25rem;  /*  4px */
+  --ft-space-2:  0.5rem;   /*  8px */
+  --ft-space-3:  0.75rem;  /* 12px */
+  --ft-space-4:  1rem;     /* 16px */
+  --ft-space-5:  1.25rem;  /* 20px */
+  --ft-space-6:  1.5rem;   /* 24px */
+  --ft-space-8:  2rem;     /* 32px */
+  --ft-space-10: 2.5rem;   /* 40px */
+  --ft-space-12: 3rem;     /* 48px */
+  --ft-space-16: 4rem;     /* 64px */
+  --ft-space-20: 5rem;     /* 80px */
+
+  /* ---- Radius ----------------------------------------------------------
+     Generous. Rounded cards are a large part of why Duolingo and Notion
+     feel approachable rather than administrative. */
+  --ft-radius-xs:   0.375rem; /*  6px */
+  --ft-radius-sm:   0.5rem;   /*  8px */
+  --ft-radius-md:   0.75rem;  /* 12px */
+  --ft-radius-lg:   1rem;     /* 16px */
+  --ft-radius-xl:   1.25rem;  /* 20px */
+  --ft-radius-2xl:  1.75rem;  /* 28px */
+  --ft-radius-full: 9999px;
+
+  /* ---- Elevation -------------------------------------------------------
+     Burgundy-tinted rather than black. A neutral drop shadow on a warm
+     palette looks like dirt; a tinted one looks intentional. */
+  --ft-shadow-xs: 0 1px 2px rgba(110, 19, 32, 0.06);
+  --ft-shadow-sm: 0 2px 8px rgba(110, 19, 32, 0.08);
+  --ft-shadow-md: 0 6px 20px rgba(110, 19, 32, 0.10);
+  --ft-shadow-lg: 0 14px 40px rgba(110, 19, 32, 0.12);
+  --ft-shadow-xl: 0 24px 64px rgba(110, 19, 32, 0.16);
+  --ft-shadow-focus: 0 0 0 3px rgba(110, 19, 32, 0.16);
+  --ft-shadow-focus-danger: 0 0 0 3px rgba(192, 57, 43, 0.18);
+
+  /* ---- Motion ----------------------------------------------------------
+     Three durations, two curves. More options than this and consistency
+     quietly disappears. --ft-ease-spring is the slight overshoot used for
+     celebratory moments only. */
+  --ft-duration-fast: 150ms;
+  --ft-duration-base: 220ms;
+  --ft-duration-slow: 400ms;
+  --ft-duration-celebrate: 700ms;
+  --ft-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ft-ease-out:      cubic-bezier(0.16, 1, 0.3, 1);
+  --ft-ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---- Layering --------------------------------------------------------
+     Named steps stop the z-index: 99999 arms race. */
+  --ft-z-base:     0;
+  --ft-z-raised:   10;
+  --ft-z-sticky:   200;
+  --ft-z-overlay:  300;
+  --ft-z-modal:    400;
+  --ft-z-toast:    500;
+
+  /* ---- Layout ----------------------------------------------------------
+     --ft-container-md is the member app's reading width: the dashboard is
+     a focused, single-column surface even on a large screen. Admin uses
+     the wider container because tables need the room. */
+  --ft-container-sm: 26rem;  /* 416px — auth cards */
+  --ft-container-md: 34rem;  /* 544px — member screens */
+  --ft-container-lg: 64rem;  /* 1024px */
+  --ft-container-xl: 80rem;  /* 1280px — admin */
+
+  --ft-tap-target: 2.75rem;  /* 44px — the minimum comfortable touch size */
+  --ft-header-height: 3.5rem;
+  --ft-bottom-nav-height: 4rem;
+}
+
+/* Breakpoints cannot be CSS variables in media queries, so they are recorded
+   here for reference and used as literals throughout. Mobile-first: every
+   rule targets small screens, and min-width queries add from there.
+
+     sm  480px   large phone
+     md  768px   tablet
+     lg 1024px   laptop
+     xl 1280px   desktop                                                    */
+
+/* ---- Reduced motion -------------------------------------------------------
+   Collapse durations rather than removing transitions entirely: state changes
+   stay legible, but nothing moves for someone who asked it not to. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ft-duration-fast: 1ms;
+    --ft-duration-base: 1ms;
+    --ft-duration-slow: 1ms;
+    --ft-duration-celebrate: 1ms;
+  }
+}
+
+/* ---- Dark theme -----------------------------------------------------------
+   The spec calls for a white background, so light is the only theme shipped.
+   This block exists to prove the token layer supports a theme swap without
+   touching a component: override the semantic surfaces, nothing else.
+   Activated by data-theme="dark" on <html>. Not currently reachable in the UI. */
+:root[data-theme='dark'] {
+  --ft-bg-page:       var(--ft-neutral-900);
+  --ft-bg-surface:    var(--ft-neutral-800);
+  --ft-bg-raised:     var(--ft-neutral-700);
+  --ft-bg-sunken:     #131010;
+  --ft-bg-brand-soft: rgba(110, 19, 32, 0.28);
+  --ft-bg-overlay:    rgba(0, 0, 0, 0.7);
+
+  --ft-text-primary:   var(--ft-neutral-50);
+  --ft-text-secondary: var(--ft-neutral-300);
+  --ft-text-muted:     var(--ft-neutral-400);
+  --ft-text-brand:     var(--ft-burgundy-300);
+
+  --ft-border-subtle:  var(--ft-neutral-700);
+  --ft-border-default: var(--ft-neutral-600);
+  --ft-border-strong:  var(--ft-neutral-500);
+}
