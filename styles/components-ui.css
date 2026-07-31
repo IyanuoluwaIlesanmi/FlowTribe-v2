@@ -773,7 +773,7 @@
   /* Sheet on mobile: square bottom corners so it reads as attached to the
      edge of the screen. Becomes a centred dialog at tablet width. */
   border-radius: var(--ft-radius-2xl) var(--ft-radius-2xl) 0 0;
-  box-shadow: var(--ft-shadow-xl);
+  box-shadow: var(--ft-shadow-lg);
   animation: ft-slide-up var(--ft-duration-base) var(--ft-ease-out);
 }
 

@@ -200,14 +200,20 @@
 
   /* ---- Radius ----------------------------------------------------------
      Generous. Rounded cards are a large part of why Duolingo and Notion
-     feel approachable rather than administrative. */
+     feel approachable rather than administrative.
+
+     The Design System names five: buttons and inputs 12px (md), cards
+     20px (xl), modals 24px (2xl), badges pill (full), avatars 50%
+     (handled per-component, since a percentage is not a length). xs, sm
+     and lg remain for the smaller interior surfaces the document does
+     not enumerate. */
   --ft-radius-xs:   0.375rem; /*  6px */
   --ft-radius-sm:   0.5rem;   /*  8px */
-  --ft-radius-md:   0.75rem;  /* 12px */
+  --ft-radius-md:   0.75rem;  /* 12px — buttons, inputs */
   --ft-radius-lg:   1rem;     /* 16px */
-  --ft-radius-xl:   1.25rem;  /* 20px */
-  --ft-radius-2xl:  1.75rem;  /* 28px */
-  --ft-radius-full: 9999px;
+  --ft-radius-xl:   1.25rem;  /* 20px — cards */
+  --ft-radius-2xl:  1.5rem;   /* 24px — modals */
+  --ft-radius-full: 9999px;   /* badges */
 
   /* ---- Elevation -------------------------------------------------------
      Burgundy-tinted rather than black. A neutral drop shadow on a warm
@@ -221,7 +227,7 @@
   --ft-shadow-sm: 0 2px 8px rgba(91, 0, 0, 0.07);   /* Level 1 — cards */
   --ft-shadow-md: 0 6px 20px rgba(91, 0, 0, 0.10);  /* Level 2 — hover */
   --ft-shadow-lg: 0 14px 40px rgba(91, 0, 0, 0.12); /* Level 3 — modals */
-  --ft-shadow-xl: 0 24px 64px rgba(91, 0, 0, 0.16);
+  --ft-shadow-xl: 0 24px 64px rgba(91, 0, 0, 0.16); /* reserved — unused */
   --ft-shadow-focus: 0 0 0 3px rgba(91, 0, 0, 0.18);
   --ft-shadow-focus-danger: 0 0 0 3px rgba(220, 38, 38, 0.20);
 
