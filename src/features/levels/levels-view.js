@@ -53,7 +53,7 @@ function render(data) {
     /* Current level, given the weight of a hero card */
     Card({ variant: 'brand' }, [
       el('div', { class: 'ft-level-hero' }, [
-        el('span', { class: 'ft-level-hero__icon' }, icon(Icons[current.iconId] || Icons.seedling)),
+        el('span', { class: 'ft-level-hero__icon' }, icon(Icons[current.iconId] || Icons.leaf)),
         el('div', { class: 'ft-level-hero__body' }, [
           el('p', { class: 'ft-level-hero__eyebrow', text: 'Your Flow Level' }),
           el('h2', { class: 'ft-level-hero__name', text: current.name }),

@@ -85,7 +85,7 @@ function setupBootstrap() {
     sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
     sheet.getRange(1, 1, 1, headers.length)
       .setFontWeight('bold')
-      .setBackground('#6E1320')
+      .setBackground('#5B0000')
       .setFontColor('#FFFFFF');
 
     sheet.setFrozenRows(1);
@@ -128,35 +128,38 @@ function setupSeedCatalog() {
   seedIfEmpty_(spreadsheet, SHEETS.MILESTONE_CATALOG, [
     // id, name, description, category, icon, rarity, sort, active, hidden, from, until, series, tier, badge
     ['first-step', 'First Step', 'You logged your first post.', 'GettingStarted', 'footprint', 'Common', 10, true, false, '', '', 'start', 1, ''],
-    ['first-goal', 'First Goal Completed', 'You hit your weekly goal for the first time.', 'GettingStarted', 'flag', 'Common', 20, true, false, '', '', 'start', 2, ''],
+    ['first-goal', 'First Goal Completed', 'You hit your weekly goal for the first time.', 'GettingStarted', 'target', 'Common', 20, true, false, '', '', 'start', 2, ''],
 
     ['active-days-7', '7 Active Days', 'You have created on seven different days.', 'Consistency', 'calendarCheck', 'Common', 30, true, false, '', '', 'activedays', 1, ''],
-    ['active-days-30', '30 Active Days', 'You have created on thirty different days.', 'Consistency', 'calendarDays', 'Uncommon', 40, true, false, '', '', 'activedays', 2, ''],
-    ['active-days-100', '100 Active Days', 'You have created on one hundred different days.', 'Consistency', 'calendarStar', 'Rare', 50, true, false, '', '', 'activedays', 3, ''],
+    ['active-days-30', '30 Active Days', 'You have created on thirty different days.', 'Consistency', 'calendarStar', 'Uncommon', 40, true, false, '', '', 'activedays', 2, ''],
+    ['active-days-100', '100 Active Days', 'You have created on one hundred different days.', 'Consistency', 'medal', 'Rare', 50, true, false, '', '', 'activedays', 3, ''],
 
     ['perfect-week', 'Perfect Week', 'You met your goal across separate days.', 'WeeklyExcellence', 'checkCircle', 'Common', 60, true, false, '', '', 'weeks', 1, ''],
-    ['perfect-weeks-5', 'Five Perfect Weeks', 'Five weeks of showing up on separate days.', 'WeeklyExcellence', 'layers', 'Uncommon', 70, true, false, '', '', 'weeks', 2, ''],
-    ['perfect-weeks-12', 'Consistency Champion', 'Twelve perfect weeks. That is a habit.', 'WeeklyExcellence', 'shieldCheck', 'Rare', 80, true, false, '', '', 'weeks', 3, ''],
+    ['perfect-weeks-5', 'Five Perfect Weeks', 'Five weeks of showing up on separate days.', 'WeeklyExcellence', 'shield', 'Uncommon', 70, true, false, '', '', 'weeks', 2, ''],
+    ['perfect-weeks-12', 'Consistency Champion', 'Twelve perfect weeks. That is a habit.', 'WeeklyExcellence', 'crown', 'Rare', 80, true, false, '', '', 'weeks', 3, ''],
 
-    ['posts-10', '10 Posts', 'Ten posts logged.', 'Posting', 'fileText', 'Common', 90, true, false, '', '', 'posts', 1, ''],
-    ['posts-50', '50 Posts', 'Fifty posts logged.', 'Posting', 'files', 'Uncommon', 100, true, false, '', '', 'posts', 2, ''],
-    ['posts-100', '100 Posts', 'One hundred posts logged.', 'Posting', 'archive', 'Uncommon', 110, true, false, '', '', 'posts', 3, ''],
-    ['posts-250', '250 Posts', 'Two hundred and fifty posts logged.', 'Posting', 'library', 'Rare', 120, true, false, '', '', 'posts', 4, ''],
-    ['posts-500', '500 Posts', 'Five hundred posts logged.', 'Posting', 'crown', 'Legendary', 130, true, false, '', '', 'posts', 5, ''],
+    ['posts-10', '10 Posts', 'Ten posts logged.', 'Posting', 'pen', 'Common', 90, true, false, '', '', 'posts', 1, ''],
+    ['posts-50', '50 Posts', 'Fifty posts logged.', 'Posting', 'feather', 'Uncommon', 100, true, false, '', '', 'posts', 2, ''],
+    ['posts-100', '100 Posts', 'One hundred posts logged.', 'Posting', 'sparkle', 'Uncommon', 110, true, false, '', '', 'posts', 3, ''],
+    ['posts-250', '250 Posts', 'Two hundred and fifty posts logged.', 'Posting', 'mountain', 'Rare', 120, true, false, '', '', 'posts', 4, ''],
+    ['posts-500', '500 Posts', 'Five hundred posts logged.', 'Posting', 'diamond', 'Legendary', 130, true, false, '', '', 'posts', 5, ''],
 
-    ['founding-member', 'Founding Member', 'You were here at the beginning.', 'Community', 'compass', 'Legendary', 140, true, false, '', '', '', 0, ''],
-    ['top-10', 'Top 10', 'You finished a week inside the top ten.', 'Community', 'medal', 'Uncommon', 150, true, false, '', '', 'rank', 1, ''],
+    ['founding-member', 'Founding Member', 'You were here at the beginning.', 'Community', 'flag', 'Legendary', 140, true, false, '', '', '', 0, ''],
+    // The Design System's milestone list omits Top 10, and reassigns Medal to
+    // 100 Active Days. Ribbon keeps it inside the same award family without
+    // colliding.
+    ['top-10', 'Top 10', 'You finished a week inside the top ten.', 'Community', 'ribbon', 'Uncommon', 150, true, false, '', '', 'rank', 1, ''],
     ['weekly-champion', 'Weekly Champion', 'You finished a week at number one.', 'Community', 'trophy', 'Rare', 160, true, false, '', '', 'rank', 2, ''],
   ]);
 
   seedIfEmpty_(spreadsheet, SHEETS.FLOW_LEVELS, [
     // id, name, description, icon, sort, requiredPosts, requiredPerfectWeeks, criteria, active
-    ['seedling', 'Seedling', 'You have started. That is the hardest part.', 'seedling', 1, 0, 0, '', true],
+    ['seedling', 'Seedling', 'You have started. That is the hardest part.', 'leaf', 1, 0, 0, '', true],
     ['creator', 'Creator', 'You are publishing regularly.', 'pen', 2, 10, 0, '', true],
     ['builder', 'Builder', 'You are building a body of work.', 'hammer', 3, 40, 2, '', true],
-    ['consistent-creator', 'Consistent Creator', 'Consistency has become your default.', 'rings', 4, 100, 6, '', true],
-    ['community-leader', 'Community Leader', 'Others follow your rhythm.', 'beacon', 5, 250, 12, '', true],
-    ['tribe-legend', 'Tribe Legend', 'A standing example of what showing up looks like.', 'laurel', 6, 500, 24, '', true],
+    ['consistent-creator', 'Consistent Creator', 'Consistency has become your default.', 'mountain', 4, 100, 6, '', true],
+    ['community-leader', 'Community Leader', 'Others follow your rhythm.', 'compass', 5, 250, 12, '', true],
+    ['tribe-legend', 'Tribe Legend', 'A standing example of what showing up looks like.', 'star', 6, 500, 24, '', true],
   ]);
 
   seedIfEmpty_(spreadsheet, SHEETS.SETTINGS, [

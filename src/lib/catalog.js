@@ -71,12 +71,12 @@ export function rarityLabel(rarity) {
  * rather than showing a gap.
  */
 export const LEVEL_ICON_ORDER = [
-  'seedling',
+  'leaf',
   'pen',
   'hammer',
-  'rings',
-  'beacon',
-  'laurel',
+  'mountain',
+  'compass',
+  'star',
 ];
 
 /**

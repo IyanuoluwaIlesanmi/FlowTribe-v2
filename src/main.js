@@ -121,7 +121,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: 'Home', href: '#/dashboard', iconPaths: Icons.home },
   { id: 'leaderboard', label: 'Tribe', href: '#/leaderboard', iconPaths: Icons.users },
   { id: 'submit', label: 'Log a post', href: '#/submit', iconPaths: Icons.plus, cta: true },
-  { id: 'milestones', label: 'Milestones', href: '#/milestones', iconPaths: Icons.medal },
+  { id: 'milestones', label: 'Milestones', href: '#/milestones', iconPaths: Icons.award },
   { id: 'profile', label: 'You', href: '#/profile', iconPaths: Icons.user },
 ];
 

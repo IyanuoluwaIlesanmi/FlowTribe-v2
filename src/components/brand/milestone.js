@@ -200,7 +200,7 @@ export function LevelChip(props) {
   const { name, iconId, size = 'md' } = props;
 
   return el('span', { class: cx('ft-level-chip', size === 'sm' && 'ft-level-chip--sm') }, [
-    icon(Icons[iconId] || Icons.seedling, { class: 'ft-level-chip__icon' }),
+    icon(Icons[iconId] || Icons.leaf, { class: 'ft-level-chip__icon' }),
     el('span', { text: name }),
   ]);
 }
@@ -240,7 +240,7 @@ export function LevelTrack(props) {
           attrs: { 'aria-current': isCurrent ? 'step' : null },
         },
         [
-          el('span', { class: 'ft-level-step__marker' }, icon(Icons[level.iconId] || Icons.seedling)),
+          el('span', { class: 'ft-level-step__marker' }, icon(Icons[level.iconId] || Icons.leaf)),
           el('div', { class: 'ft-level-step__body' }, [
             el('div', { class: 'ft-level-step__head' }, [
               el('span', { class: 'ft-level-step__name', text: level.name }),

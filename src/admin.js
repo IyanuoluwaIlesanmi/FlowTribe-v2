@@ -90,7 +90,7 @@ const NAV = [
   { path: '/analytics', label: 'Analytics', iconPaths: Icons.chart, capability: 'analytics:read' },
   { path: '/invites', label: 'Invites', iconPaths: Icons.ticket, capability: 'invite:read' },
   { path: '/settings', label: 'Settings', iconPaths: Icons.settings, capability: 'settings:update' },
-  { path: '/audit', label: 'Audit', iconPaths: Icons.shield, capability: 'audit:read' },
+  { path: '/audit', label: 'Audit', iconPaths: Icons.clipboard, capability: 'audit:read' },
 ];
 
 function AdminNav(activePath) {

@@ -5,7 +5,13 @@
  * through `doPost` — the same entry point, envelope, middleware chain, and
  * action table that a browser will hit — so what is verified here is the
  * actual request path, not a convenient shortcut around it.
+ *
+ * This file is a module for exactly one reason: the icon contract check
+ * needs the real `Icons` export, and a copy of that list in here would be
+ * free to drift from the thing it is supposed to be guarding.
  */
+
+import { Icons } from '../src/lib/icons.js';
 
 (function () {
   var results = [];
@@ -953,6 +959,34 @@
     d.milestones.forEach(function (entry) {
       assert(known.indexOf(entry.category) !== -1,
         entry.milestoneId + ' has unknown category "' + entry.category + '"');
+    });
+  });
+
+  it('every catalog and level IconID resolves to a real icon', function () {
+    var env = freshInstall();
+
+    // WHY THIS EXISTS
+    // Icon lookup is `Icons[iconId] || Icons.medal` — a fallback, not a
+    // throw. A mistyped or renamed IconID therefore fails SILENTLY: the
+    // wrong badge renders and nothing anywhere reports a problem. The
+    // milestone set was remapped wholesale during the Phase 8 visual pass,
+    // which is exactly the kind of change that would introduce one.
+    //
+    // Icons is imported, not copied, so this cannot drift.
+    var milestones = ok('milestones.list', {}, env.member.token).milestones;
+    var levels = ok('levels.list', {}, env.member.token).levels;
+
+    assert(milestones.length > 0, 'no milestones to check');
+    assert(levels.length > 0, 'no levels to check');
+
+    milestones.forEach(function (entry) {
+      assert(entry.iconId && Icons[entry.iconId],
+        'milestone "' + entry.milestoneId + '" has unknown iconId "' + entry.iconId + '"');
+    });
+
+    levels.forEach(function (entry) {
+      assert(entry.iconId && Icons[entry.iconId],
+        'level "' + entry.levelId + '" has unknown iconId "' + entry.iconId + '"');
     });
   });
 

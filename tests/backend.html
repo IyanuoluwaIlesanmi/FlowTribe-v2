@@ -107,7 +107,14 @@
     <script src="../appsscript/setup/Setup.gs"></script>
     <script src="../appsscript/setup/SmokeTest.gs"></script>
 
-    <!-- 3. The suite. -->
-    <script src="backend-suite.js"></script>
+    <!--
+      3. The suite.
+
+      Loaded as a module so it can statically import src/lib/icons.js and
+      check the seeded catalog against the REAL icon set rather than against
+      a copy of it that would drift. Module scripts run after every classic
+      script above, so the backend globals are already in place.
+    -->
+    <script type="module" src="backend-suite.js"></script>
   </body>
 </html>
