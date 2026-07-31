@@ -6,10 +6,18 @@
 > The three `.docx` files = source of truth for **visual design only**.
 > Conflicts are resolved there and **closed**.
 
-**As of the end of Phase 9.** Feature complete, fully wired, verified against
-an in-memory harness. **Deployment-ready and not yet deployed.**
+**As of the end of Phase 10.** Feature complete, fully wired, and now verified
+end to end through the real views. **Deployment-ready and not yet deployed.**
 
-`101/101` automated checks passing. Open `tests/backend.html` to re-run them.
+**Verification, as of Phase 10:**
+
+| Suite | Result | Open |
+|---|---|---|
+| Backend checks | **101 / 101** | `tests/backend.html` |
+| End-to-end journeys | **16 / 16** | `tests/journeys.html` |
+
+Run **both**. They prove different things, and Phase 10 exists because the
+first cannot see what the second does.
 
 ---
 
@@ -17,9 +25,10 @@ an in-memory harness. **Deployment-ready and not yet deployed.**
 
 ## Design system
 
-- `styles/tokens.css` — full token layer: burgundy and gold scales,
-  warm-tinted neutrals, 4px spacing scale, burgundy-tinted shadows, type
-  scale, motion durations with `prefers-reduced-motion`, named z-index steps
+- `styles/tokens.css` — full token layer: burgundy `#5B0000` and gold
+  `#F5B400` scales, the Design System's true neutrals, 4px spacing scale,
+  burgundy-tinted shadows, type scale, motion durations with
+  `prefers-reduced-motion`, named z-index steps
 - 12 stylesheets loaded as parallel `<link>` tags (no `@import` waterfall)
 - Component gallery at `gallery.html` rendering every primitive
 - Verified: **zero horizontal overflow at 375px**
@@ -87,7 +96,8 @@ idempotency by `requestId` · `LockService` on every derived-state write ·
 
 ## Verification and tooling
 
-101 checks across 14 groups · in-memory Google fakes with real SHA-256 ·
+101 backend checks across 14 groups · **16 end-to-end journeys mounting the
+real views against the real backend** · in-memory Google fakes with real SHA-256 ·
 `setupSmokeTest()` (27 checks against a real spreadsheet, self-cleaning) ·
 `scripts/serve.ps1` · 20 documents
 
@@ -180,6 +190,42 @@ None of these blocks launch. T1 becomes free the moment you deploy.
 
 ---
 
+# Phase 10 — Defects found and fixed
+
+Six real defects. Three were **blocking**, and all three had survived every
+earlier phase behind a fully passing suite.
+
+| # | Severity | Defect | Fix |
+|---|---|---|---|
+| **B1** | **Blocking** | `submit-view` read `result.stats.week`; the API returns stats flat. Threw on **every successful post**, and the catch showed *"We couldn't reach Flow Tribe"* on a post already in the ledger. Retrying hit `DUPLICATE_LINK` | Read the flat shape |
+| **B2** | **Blocking** | `profile-view` read `milestones.milestones`; the API returns `{ totalEarned, totalAvailable, recent }`. Profile never opened | Read `recent` |
+| **B3** | **Blocking** | `LevelProgress` read `next.posts.current`. **No endpoint has ever returned that shape.** It threw on every render, and the view's catch turned it into *"We could not load your dashboard"* — so the member dashboard had **never rendered**. The Levels screen was broken the same way | Take current progress from `stats`, which both callers already hold. No API change |
+| **A1** | High | PIN boxes 2–6 were `aria-hidden="true"` **and focusable** — prohibited by the ARIA spec. Affected all three auth entry points | Positional labels |
+| **A2** | High | `Field` put the label's `for` on a decorated Input's **wrapper div**. Invalid HTML; tapping the label did not focus the control; `aria-invalid` / `describedby` / `required` landed where no screen reader looks. Hit the submit link field | Target `control.input \|\| control` |
+| **E1** | High | `toAppError` mapped **every** `TypeError` to `NETWORK`. `api.js` already converts real fetch failures at the source, so this branch only ever caught **bugs** and dressed them as connectivity problems. It is how B1 stayed hidden | Removed; bugs are `SERVER_ERROR` |
+
+Also fixed: `system.health` was missing from the client's `PUBLIC_ACTIONS`, so
+`health()` — the probe used to confirm a deployment — failed for anyone not
+logged in, which is exactly who runs it. `statsSettling` is now handled.
+Member Detail and Settings use skeletons like every other screen.
+
+## Why a 101-check suite missed all three blockers
+
+The frontend-contract group asserts the shape of the **response**. It
+confirmed `milestones.totalEarned` exists — it does — while the view read a
+path that never did. **A test written from the response can only ever confirm
+the response.**
+
+Worse, every member view wraps its load in `try/catch` and renders an
+EmptyState. A view whose *render* throws does not crash: it quietly shows
+"We could not load your dashboard", which is long, contains no `undefined`,
+and looks like content.
+
+`tests/journeys.html` closes both gaps by mounting the real views and failing
+on an error state. It is mutation-tested: reintroducing B3 turns it red.
+
+---
+
 # Pending Decisions
 
 ## ✅ D0 — RESOLVED: design documents vs implementation
@@ -256,11 +302,13 @@ deployed, any further icon change is a manual spreadsheet edit.
 ```
 1. Read FINAL_PRODUCT_DECISIONS.md FIRST — it governs everything
 2. Read PROJECT_OVERVIEW.md, ENGINEERING.md, this file, and the three .docx files
-3. Open tests/backend.html — confirm 101/101 before changing anything
-4. Deploy per deployment.md
-5. Run setupSmokeTest() on the live project
-6. Work production-checklist.md
-7. Record submission and dashboard latency from the execution log
+3. Open tests/backend.html   — confirm 101/101 before changing anything
+4. Open tests/journeys.html  — confirm 16/16. THIS is the one that catches
+   a view reading a field the API does not return
+5. Deploy per deployment.md
+6. Run setupSmokeTest() on the live project
+7. Work production-checklist.md
+8. Record submission and dashboard latency from the execution log
 ```
 
 ## If touching anything visual
@@ -283,7 +331,9 @@ Check `gallery.html` after each change — it renders every primitive on one
 page. It does **not** load `components-admin.css`; admin layout has to be
 checked on `admin.html`.
 
-**Re-run `tests/backend.html`: it must still be 101/101.**
+**Re-run BOTH suites: `tests/backend.html` at 101/101 and
+`tests/journeys.html` at 16/16.** A visual change that breaks a journey was
+not a visual change.
 
 ## If starting the Brand & Content Pass
 

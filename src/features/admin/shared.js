@@ -9,9 +9,35 @@
  */
 
 import { el } from '../../core/dom.js';
-import { Badge, Button, EmptyState } from '../../components/ui/index.js';
+import { Badge, Button, Card, EmptyState, SkeletonText } from '../../components/ui/index.js';
 import { Icons } from '../../lib/icons.js';
 import { can } from '../../core/session.js';
+
+/**
+ * A panel that is still loading.
+ *
+ * Member Detail and Settings previously showed a centred "Loading…" string
+ * while every other screen showed skeletons. The Design System asks for
+ * skeleton loaders, and the inconsistency was visible whenever an admin moved
+ * between screens.
+ *
+ * The skeleton bars are aria-hidden — they are decoration, and a screen reader
+ * announcing six grey rectangles helps nobody. The role="status" wrapper
+ * carries the announcement instead, so the wait is conveyed once, in words.
+ *
+ * @param {number} [lines=6]
+ * @returns {HTMLElement}
+ */
+export function LoadingPanel(lines = 6) {
+  return el(
+    'div',
+    { attrs: { role: 'status', 'aria-live': 'polite' } },
+    [
+      el('span', { class: 'ft-sr-only', text: 'Loading' }),
+      Card({}, SkeletonText(lines)),
+    ],
+  );
+}
 
 /**
  * A failed load, with a way out.

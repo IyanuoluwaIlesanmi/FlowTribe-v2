@@ -3,10 +3,11 @@
 Version 2 of **The Flow Tribe w/ Iyanuoluwa Ilesanmi** — the consistency system behind a
 Telegram community for creators and solopreneurs.
 
-> **Status: Phases 1–9 complete. Deployment-ready, not yet deployed.**
+> **Status: Phases 1–10 complete. Deployment-ready, not yet deployed.**
 > Feature complete for v1 — 11 member screens, 9 admin screens, 38 backend actions —
-> with the approved visual design applied and the frontend fully wired to the
-> backend. **101/101** automated checks passing.
+> with the approved visual design applied, the frontend fully wired to the
+> backend, and every member journey verified end to end.
+> **101/101** backend checks and **16/16** journeys passing.
 > The one blocking item is the live deployment: see [`docs/deployment.md`](docs/deployment.md).
 
 ## Running it locally
@@ -22,11 +23,17 @@ powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 | Member app | `http://localhost:5173/` |
 | Admin app | `http://localhost:5173/admin.html` |
 | **Component gallery** | `http://localhost:5173/gallery.html` |
-| **Verification** | `http://localhost:5173/tests/backend.html` |
+| **Verification — backend** | `http://localhost:5173/tests/backend.html` |
+| **Verification — journeys** | `http://localhost:5173/tests/journeys.html` |
 
 The gallery renders every token and component on one page — it is the fastest way to see
-the design system. The verification page runs the whole backend against an in-memory fake
-of Google's APIs in about ten seconds; it must read **101/101** before and after any change.
+the design system.
+
+`backend.html` runs the whole backend against an in-memory fake of Google's APIs in about
+ten seconds and must read **101/101**. `journeys.html` then mounts the **real screens**
+against that backend and must read **16/16** — it takes about 50 seconds, and it is the
+one that catches a view reading a field the API does not return. Three blocking crashes
+reached Phase 10 because the first suite cannot see what the second does.
 
 > The gallery does **not** load `styles/components-admin.css`. Admin-only layout has to
 > be checked on `admin.html`.
@@ -82,7 +89,8 @@ FlowTribe-v2/
 ├── styles/        12 stylesheets — tokens.css is the single source of visual truth
 ├── scripts/       serve.ps1, the local static dev server
 ├── appsscript/    Google Apps Script backend (the real source of truth, not doc snippets)
-└── tests/         backend.html — 101 checks against in-memory Google fakes
+└── tests/         backend.html  — 101 checks against in-memory Google fakes
+                   journeys.html — 16 end-to-end journeys through the real views
 ```
 
 ## Docs

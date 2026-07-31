@@ -107,7 +107,16 @@ Run the test suite and confirm it is green BEFORE touching anything:
   powershell -ExecutionPolicy Bypass -File scripts/serve.ps1
 
   Then open http://localhost:5173/tests/backend.html
-  Expected: 101/101 passing across 14 groups.
+  Expected: 101/101 passing across 14 groups. Takes about ten seconds.
+
+  AND open http://localhost:5173/tests/journeys.html
+  Expected: 16/16. Takes about 50 seconds.
+
+  RUN BOTH. They prove different things. backend.html proves the backend
+  answers correctly; journeys.html mounts the REAL SCREENS against those
+  answers. Three blocking crashes reached Phase 10 — including a member
+  dashboard that had never once rendered — while backend.html read 101/101,
+  because a test written from the response can only confirm the response.
 
   Also useful:
     http://localhost:5173/              member app
@@ -161,8 +170,9 @@ What was decided, and what was measured, is in FINAL_PRODUCT_DECISIONS.md
   - Satoshi ships Medium 500 and Bold 700 ONLY. Asking for 600 or 800 makes
     the browser synthesise a face, which smears at large numeral sizes.
 
-AFTER ANY VISUAL WORK: re-run tests/backend.html. It must still be 101/101.
-A "visual" change that breaks a test was not a visual change.
+AFTER ANY WORK: re-run BOTH suites. backend.html must still be 101/101 and
+journeys.html must still be 16/16. A "visual" change that breaks a test was
+not a visual change.
 
 Note: gallery.html does NOT load styles/components-admin.css. Admin-only
 layout must be checked on admin.html.
@@ -235,7 +245,12 @@ Everything a new session needs is in files, not in conversation:
 | Security posture with evidence | `security-review.md` |
 | How to deploy | `deployment.md` |
 | How to verify | `production-checklist.md` |
-| **Whether it still works** | `tests/backend.html` — 101 checks |
+| **Whether the backend works** | `tests/backend.html` — 101 checks |
+| **Whether the SCREENS work** | `tests/journeys.html` — 16 journeys |
 
-The test suite is the real safety net. Any future session can prove the system
-is intact in about ten seconds, before changing a line.
+The two suites together are the real safety net. Any future session can prove
+the system is intact in about a minute, before changing a line.
+
+`journeys.html` is the one that would have caught the Phase 10 blockers, and
+it is mutation-tested — reintroduce the `LevelProgress` defect and it turns
+red. A regression suite nobody has watched fail is a guess.

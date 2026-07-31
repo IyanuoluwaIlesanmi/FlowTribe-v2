@@ -25,13 +25,13 @@ import { Icons } from '../../lib/icons.js';
 import { date, dateTime, number, shortUrl } from '../../lib/format.js';
 import { PLATFORM_LIST, WEEKLY_GOALS, getPlatform } from '../../lib/platforms.js';
 import { navigate } from '../../app/navigation.js';
-import { ErrorState, Panel, RoleBadge, StatusBadge, ifCan } from './shared.js';
+import { ErrorState, LoadingPanel, Panel, RoleBadge, StatusBadge, ifCan } from './shared.js';
 
 export default function AdminMemberDetailView(context) {
   const root = el('div');
   const memberId = context.params.id;
 
-  mount(root, el('div', { class: 'ft-text-center ft-mt-8 ft-text-muted', text: 'Loading…' }));
+  mount(root, LoadingPanel());
   load();
 
   async function load() {

@@ -191,6 +191,10 @@ FlowTribe-v2/
 │   ├── backend.html             Harness — open in a browser
 │   ├── backend-suite.js         101 checks across 14 groups. Loaded as a
 │   │                            MODULE so it can import the real icon set
+│   ├── journeys.html            E2E: the REAL views against the REAL backend
+│   ├── journeys-suite.js        16 journeys. fetch routed into doPost; a
+│   │                            router shim mounts the same modules main.js
+│   │                            registers. Fails on an error state
 │   ├── index.html / suite.js    Earlier pure-business-logic suite, kept as
 │   │                            reference. backend.html is the gate
 │   └── fakes/GoogleFakes.js     In-memory SpreadsheetApp, CacheService,
@@ -933,7 +937,12 @@ ES modules are subject to CORS — **`file://` will not work**.
 
 # Testing Strategy
 
-**101 automated checks across 14 groups.** Open `tests/backend.html`.
+**Two suites. Run both — they prove different things.**
+
+| Suite | Open | Proves |
+|---|---|---|
+| **101 checks, 14 groups** | `tests/backend.html` | The backend answers correctly |
+| **16 journeys** | `tests/journeys.html` | The real views render those answers correctly |
 
 ## How it works
 
@@ -992,10 +1001,48 @@ from it is an accident.
 `profile:read:all` as unused and would have had someone delete a real gate —
 it caught that in its first run.
 
-## What it cannot prove
+## The journey suite — and why asserting shapes was not enough
+
+`tests/journeys.html` mounts the **real view modules** against the **real
+backend**: `fetch` is routed into `doPost`, and a router shim mounts the same
+modules `main.js` registers, so `navigate('/dashboard')` really renders the
+dashboard. 16 journeys cover registration, login, session restore, submission,
+every member screen, PIN reset, PIN change, logout, and empty states.
+
+It exists because Phase 10 found **three blocking crashes** that this suite —
+at 101 passing checks — could not see:
+
+1. `submit-view` read `result.stats.week`; the API returns stats flat. Every
+   successful post threw, and the catch told the member *"We couldn't reach
+   Flow Tribe"* about a post already in the ledger.
+2. `profile-view` read `milestones.milestones`; the API returns `recent`.
+3. `LevelProgress` read `next.posts.current`, a shape **no endpoint has ever
+   returned**. The member dashboard had never rendered.
+
+**The frontend-contract group asserts the shape of the *response*.** It
+confirmed `milestones.totalEarned` exists — it does — while the view read a
+path that never did. A test written from the response can only ever confirm
+the response. The journey suite has no contract to keep in sync, because the
+view *is* the contract.
+
+⚠️ **`assertLoaded()` is the assertion that matters.** Every member view wraps
+its load in `try/catch` and renders an EmptyState, so a view whose *render*
+throws does not crash — it quietly shows "We could not load your dashboard",
+which is long, contains no `undefined`, and passes any naive "did something
+render?" check. The first version of these journeys **passed against the
+broken dashboard**. `assertLoaded()` fails on a "Try again" button or
+"could not load" copy.
+
+The suite is mutation-tested: reintroducing the `LevelProgress` defect turns
+it red with *"the dashboard rendered an ERROR STATE, not content"*, and
+restoring the fix turns it green. A regression suite nobody has watched fail
+is a guess.
+
+## What neither suite can prove
 
 Apps Script's own runtime · real Sheets latency · quota behaviour · genuine
-lock contention (the fake is single-threaded) · the deployment configuration.
+lock contention (the fake is single-threaded) · the deployment configuration ·
+real browser rendering (the journeys assert the DOM, not pixels).
 
 **`setupSmokeTest()` closes most of that gap** the moment it runs on the real
 project.
@@ -1045,6 +1092,8 @@ project.
 | ~~K9~~ | ~~Brand fonts not self-hosted~~ | **RESOLVED** | Satoshi and Inter self-hosted in `assets/fonts/` (Phase 8). No CDN |
 | K11 | Satoshi has no Yoruba subdot glyphs | Low | Mitigated: Inter sits second in `--ft-font-display` and substitutes per-glyph. See `FINAL_PRODUCT_DECISIONS.md` §6.4 |
 | K10 | `gallery.html` and `tests/` ship unless removed | Trivial | Contain no data |
+| K12 | Journey suite takes ~50s | Trivial | Each journey does a full 14-sheet bootstrap for isolation. Worth the wall time |
+| K13 | Registration Back button exits the flow | Low | The wizard step is in-memory, so browser Back leaves registration rather than stepping back. **Deferred by decision — navigation flow is frozen.** Phase 10 L1 |
 
 ---
 

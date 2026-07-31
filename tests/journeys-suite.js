@@ -156,8 +156,18 @@ function byLabel(labelText) {
   return control;
 }
 
-/** Wait until a predicate holds, or fail loudly rather than asserting on a half-rendered screen. */
-async function waitFor(predicate, description, timeout = 2000) {
+/**
+ * Wait until a predicate holds, or fail loudly rather than asserting on a
+ * half-rendered screen.
+ *
+ * The timeout is generous on purpose. A browser throttles setTimeout to about
+ * one second in a BACKGROUND tab, so both this poll and the app's own
+ * debounced work (the username availability check) slow down together. A 2s
+ * budget gave roughly two polls and produced a test that passed when the tab
+ * was visible and failed when it was not — the worst kind of test, because it
+ * teaches you to re-run instead of to look.
+ */
+async function waitFor(predicate, description, timeout = 10000) {
   const started = Date.now();
   while (Date.now() - started < timeout) {
     if (predicate()) return;
@@ -251,7 +261,7 @@ async function go(path) {
   // sometimes passes is worse than no test.
   await settle(20);
   const started = Date.now();
-  while (Date.now() - started < 2000) {
+  while (Date.now() - started < 10000) {
     if (!screen.querySelector('.ft-skeleton') && text().length > 20) break;
     await settle(25);
   }

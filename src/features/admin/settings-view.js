@@ -16,7 +16,7 @@ import { Button, Card, Field, Input, Switch, toastError, toastSuccess } from '..
 import { PageHeader } from '../../components/layout/index.js';
 import { Icons } from '../../lib/icons.js';
 import { can } from '../../core/session.js';
-import { ErrorState, Panel } from './shared.js';
+import { ErrorState, LoadingPanel, Panel } from './shared.js';
 
 /**
  * The settings this screen exposes, grouped as the approved spec names them.
@@ -66,7 +66,7 @@ export default function AdminSettingsView() {
   const root = el('div');
   const editable = can('settings:update');
 
-  mount(root, el('div', { class: 'ft-text-center ft-mt-8 ft-text-muted', text: 'Loading…' }));
+  mount(root, LoadingPanel());
   load();
 
   async function load() {
