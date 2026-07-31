@@ -23,7 +23,9 @@
 import { AppShell, BottomNav, TopBar } from './components/layout/index.js';
 import { Logo } from './components/brand/index.js';
 import { createRouter } from './core/router.js';
-import { restoreSession, isAuthenticated, sessionStore } from './core/session.js';
+import {
+  restoreSession, isAuthenticated, sessionStore, setMustChangePin, mustChangePin,
+} from './core/session.js';
 import { clearToasts, toastError } from './components/ui/index.js';
 import { MUST_CHANGE_PIN_EVENT, SESSION_EXPIRED_EVENT } from './core/api.js';
 import { config } from './core/config.js';
@@ -40,11 +42,40 @@ import { registerRouter } from './app/navigation.js';
  * server-side regardless of what the client permits.
  * ---------------------------------------------------------------------- */
 
-const requireAuth = () => (isAuthenticated() ? true : '/login');
-const requireGuest = () => (isAuthenticated() ? '/dashboard' : true);
+/**
+ * Signed in, and not mid-forced-PIN-change.
+ *
+ * The second half matters on a RESTORED session: the flag is persisted, so a
+ * member who closes the tab mid-reset and comes back would otherwise land on
+ * the dashboard, watch it fail, and be redirected from the error handler.
+ * Checking here means they arrive where they need to be instead of bouncing
+ * through a screen that cannot load.
+ */
+const requireAuth = () => {
+  if (!isAuthenticated()) return '/login';
+  if (mustChangePin()) return '/change-pin';
+  return true;
+};
+
+/** Signed in. Used only by /change-pin, which requireAuth would send to itself. */
+const requireSession = () => (isAuthenticated() ? true : '/login');
+
+/** Not signed in. An already-signed-in visitor goes wherever they belong. */
+const requireGuest = () => {
+  if (!isAuthenticated()) return true;
+  return mustChangePin() ? '/change-pin' : '/dashboard';
+};
 
 const routes = [
-  { path: '/', guard: () => (isAuthenticated() ? '/dashboard' : '/login'), view: () => Blank },
+  {
+    path: '/',
+    // Always a redirect, never a render — so it returns a path in every case.
+    guard: () => {
+      if (!isAuthenticated()) return '/login';
+      return mustChangePin() ? '/change-pin' : '/dashboard';
+    },
+    view: () => Blank,
+  },
 
   // --- Authentication ---
   {
@@ -69,6 +100,19 @@ const routes = [
     path: '/help/pin',
     title: 'Forgot PIN',
     view: async () => (await import('./features/auth/welcome-view.js')).ForgotPinView,
+  },
+  {
+    path: '/change-pin',
+    title: 'Change PIN',
+    // requireSession, not requireGuest: a member in a forced change IS signed
+    // in. The old MUST_CHANGE_PIN handler sent them to /login, where
+    // requireGuest bounced them straight back to /dashboard, which threw
+    // MUST_CHANGE_PIN again. That loop is what this route closes.
+    //
+    // And not requireAuth either — that redirects here, so this route would
+    // redirect to itself.
+    guard: requireSession,
+    view: () => import('./features/auth/change-pin-view.js'),
   },
 
   // --- Member ---
@@ -126,7 +170,12 @@ const NAV_ITEMS = [
 ];
 
 /** Routes that render without the app chrome. */
-const BARE_ROUTES = new Set(['/', '/login', '/register', '/welcome', '/help/pin']);
+// The change-PIN screen is chrome-free on purpose. A member in a forced change
+// can reach nothing else, so a navigation bar of links that all fail is worse
+// than no navigation bar.
+const BARE_ROUTES = new Set([
+  '/', '/login', '/register', '/welcome', '/help/pin', '/change-pin',
+]);
 
 /* -------------------------------------------------------------------------
  * Boot
@@ -173,8 +222,13 @@ function boot() {
     router.navigate('/login', { replace: true });
   });
 
+  // A reset PIN blocks every action but the change itself, so the only useful
+  // destination is the change screen. Sending it to /login was the bug: the
+  // member still holds a valid token, so requireGuest returned them to the
+  // dashboard and the same error fired again.
   window.addEventListener(MUST_CHANGE_PIN_EVENT, () => {
-    router.navigate('/login', { replace: true });
+    setMustChangePin(true);
+    if (router.current !== '/change-pin') router.navigate('/change-pin', { replace: true });
   });
 
   // Signing out anywhere — including another tab — returns to login.

@@ -91,6 +91,14 @@ export default function LoginView() {
       const data = await call('auth.login', { username, pin });
       saveSession(data);
 
+      // A reset PIN outranks the role hint. The server will refuse every
+      // action but the change itself, so sending an admin to the admin shell
+      // here would just show them a frame full of failing panels.
+      if (data.mustChangePin) {
+        navigate('/change-pin', { replace: true });
+        return;
+      }
+
       // Role-based routing. The server decides where this member belongs and
       // returns `redirect`; the client does not inspect the role itself.
       //

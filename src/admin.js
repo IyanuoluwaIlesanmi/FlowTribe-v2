@@ -23,7 +23,7 @@ import { Logo } from './components/brand/index.js';
 import { Button, clearToasts, toastError } from './components/ui/index.js';
 import { createRouter } from './core/router.js';
 import { restoreSession, isAuthenticated, can, getMember, clearSession } from './core/session.js';
-import { SESSION_EXPIRED_EVENT, call } from './core/api.js';
+import { SESSION_EXPIRED_EVENT, MUST_CHANGE_PIN_EVENT, call } from './core/api.js';
 import { config } from './core/config.js';
 import { cx, el, icon } from './core/dom.js';
 import { Icons } from './lib/icons.js';
@@ -196,6 +196,15 @@ function boot() {
     clearToasts();
     // Sessions begin in the member app, so that is where an expired one goes.
     window.location.href = `${config.app.memberEntry}#/login`;
+  });
+
+  // An admin's PIN can be reset like anyone else's, and PinGate then refuses
+  // every admin action too — this shell would render a frame of failing
+  // panels. The change screen lives in the member app, so this is a real
+  // navigation rather than a route change.
+  window.addEventListener(MUST_CHANGE_PIN_EVENT, () => {
+    clearToasts();
+    window.location.href = `${config.app.memberEntry}#/change-pin`;
   });
 
   router.start();

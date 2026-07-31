@@ -154,6 +154,22 @@ export function setMustChangePin(value) {
 }
 
 /**
+ * Is this member being forced to replace their PIN?
+ *
+ * The flag was written and stored from the start and had no reader, because
+ * nothing could act on it. The change-PIN screen uses it to decide whether it
+ * is a forced reset or a voluntary change — copy only.
+ *
+ * A UX signal, never an authorisation one. `PinGate` enforces this server-side
+ * on every request regardless of what the client believes.
+ *
+ * @returns {boolean}
+ */
+export function mustChangePin() {
+  return Boolean(sessionStore.get().mustChangePin);
+}
+
+/**
  * Extend the local expiry after the server slides the session forward.
  *
  * @param {string} expiresAt  ISO 8601

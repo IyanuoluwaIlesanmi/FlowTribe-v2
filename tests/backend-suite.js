@@ -406,6 +406,55 @@ import { Icons } from '../src/lib/icons.js';
     });
   });
 
+  it('a reset PIN can actually be recovered from, end to end', function () {
+    // THE PATH THIS COVERS
+    // Admin PIN reset is the only account recovery in the product. Every step
+    // below worked in isolation, and the sequence still stranded the member:
+    // login succeeded, everything after it returned MUST_CHANGE_PIN, and the
+    // client had no screen to send them to. Walking the whole path is what
+    // catches that, so this test walks the whole path.
+    var env = freshInstall();
+    var memberId = env.member.member.memberId;
+    var TEMP = '539182';
+    var CHOSEN = '746391';
+
+    ok('admin.members.resetPin', { memberId: memberId, tempPin: TEMP }, env.admin.token);
+
+    // The old session must be gone the moment the PIN changes underneath it.
+    var stale = post('member.dashboard', {}, env.member.token);
+    assert(!stale.ok, 'the pre-reset session should not survive');
+
+    // Logging in with the temporary PIN succeeds and says why it is limited.
+    var forced = ok('auth.login', { username: 'test.member', pin: TEMP });
+    assert(forced.token, 'login must still issue a token, or there is nothing to change the PIN with');
+    equal(forced.mustChangePin, true, 'the client needs this flag to route to the change screen');
+
+    // ...and nothing else is permitted until the PIN is replaced.
+    var blocked = post('member.dashboard', {}, forced.token);
+    assert(!blocked.ok);
+    equal(blocked.error.code, 'MUST_CHANGE_PIN');
+
+    // The one permitted action resolves it.
+    var changed = ok('auth.changePin', {
+      currentPin: TEMP, newPin: CHOSEN, newPinConfirm: CHOSEN,
+    }, forced.token);
+    equal(changed.reauthenticate, true, 'the client is told to log in again');
+
+    // Changing the PIN revokes every session, this one included.
+    var afterChange = post('member.dashboard', {}, forced.token);
+    assert(!afterChange.ok, 'the session used to change the PIN must not survive it');
+
+    // And the member is fully back.
+    var clean = ok('auth.login', { username: 'test.member', pin: CHOSEN });
+    equal(Boolean(clean.mustChangePin), false, 'the flag must clear');
+    var dash = ok('member.dashboard', {}, clean.token);
+    assert(dash.member, 'the member can use the app again');
+
+    // The temporary PIN the admin knew is dead.
+    var oldPin = post('auth.login', { username: 'test.member', pin: TEMP });
+    assert(!oldPin.ok, 'the admin-known temporary PIN must stop working');
+  });
+
   /* ======================================================================
      5. Authorisation
      ====================================================================== */
