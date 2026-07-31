@@ -106,7 +106,7 @@ function render(data) {
         : EmptyState({
             title: 'Nobody has posted yet this week',
             message: 'The board fills as members log their first posts.',
-            iconPaths: Icons.trophy,
+            illustration: 'emptyLeaderboard',
           }),
       ),
     ),

@@ -260,7 +260,7 @@ function RecentEmpty() {
   return Card({}, EmptyState({
     title: 'Nothing logged yet',
     message: 'Your next post starts today’s momentum. It takes about ten seconds to log.',
-    iconPaths: Icons.inbox,
+    illustration: 'noPosts',
   }));
 }
 

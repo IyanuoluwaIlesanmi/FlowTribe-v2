@@ -120,7 +120,7 @@ export default function AdminLeaderboardView() {
       return Card({}, EmptyState({
         title: 'Nobody on the board yet',
         message: 'Members appear here once they log their first post in this period.',
-        iconPaths: Icons.trophy,
+        illustration: 'emptyLeaderboard',
       }));
     }
 

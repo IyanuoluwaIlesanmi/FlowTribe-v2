@@ -12,6 +12,7 @@
 import { cx, el, icon, on } from '../../core/dom.js';
 import { stateful } from '../../core/component.js';
 import { initials } from '../../lib/format.js';
+import { illustration } from '../../lib/illustrations.js';
 
 /* -------------------------------------------------------------------------
  * Card
@@ -190,18 +191,32 @@ export function SkeletonText(lines = 3) {
  * ---------------------------------------------------------------------- */
 
 /**
+ * An empty state.
+ *
+ * Takes either an `illustration` name or `iconPaths`, never both — the
+ * illustration wins if both are given. `iconPaths` is the original signature
+ * and keeps working unchanged, because a good half of these are error and
+ * permission states where a plain icon says it better than a drawing does.
+ *
  * @param {Object} props
  * @param {string} props.title
  * @param {string} [props.message]
+ * @param {string} [props.illustration]  A key of lib/illustrations.
  * @param {string[]} [props.iconPaths]
  * @param {HTMLElement} [props.action]
  * @returns {HTMLElement}
  */
 export function EmptyState(props) {
-  const { title, message, iconPaths, action } = props;
+  const { title, message, illustration: illustrationName, iconPaths, action } = props;
+
+  const art = illustrationName ? illustration(illustrationName, { class: 'ft-empty__art' }) : null;
 
   return el('div', { class: 'ft-empty' }, [
-    iconPaths ? el('div', { class: 'ft-empty__icon' }, icon(iconPaths)) : null,
+    art
+      ? el('div', { class: 'ft-empty__illustration' }, art)
+      : iconPaths
+        ? el('div', { class: 'ft-empty__icon' }, icon(iconPaths))
+        : null,
     el('p', { class: 'ft-empty__title', text: title }),
     message ? el('p', { class: 'ft-empty__message', text: message }) : null,
     action || null,

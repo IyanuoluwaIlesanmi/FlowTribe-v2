@@ -736,6 +736,22 @@
   color: var(--ft-burgundy-400);
 }
 
+/* Illustration variant. Two colours, both set here: the stroke comes from
+   `color` and the flat fill from --ft-illus-fill, so every illustration is
+   themed by this one rule and none of them carries a hex. */
+.ft-empty__illustration {
+  --ft-illus-fill: var(--ft-burgundy-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ft-burgundy-300);
+}
+
+.ft-empty__art {
+  width: var(--ft-icon-empty);
+  height: var(--ft-icon-empty);
+}
+
 .ft-empty__title {
   font-size: var(--ft-text-lg);
   font-weight: var(--ft-weight-bold);

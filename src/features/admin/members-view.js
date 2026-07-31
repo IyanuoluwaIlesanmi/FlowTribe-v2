@@ -128,7 +128,7 @@ export default function AdminMembersView() {
         message: query.search
           ? 'Try a different name, or clear the filters.'
           : 'Members appear here as they register with an invite code.',
-        iconPaths: Icons.users,
+        illustration: query.search ? 'noResults' : 'noActivity',
       }));
     }
 

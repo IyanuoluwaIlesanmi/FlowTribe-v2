@@ -139,7 +139,7 @@ export default function AdminAuditView() {
       mount(results, Card({}, EmptyState({
         title: state.group ? 'Nothing in this category yet' : 'No activity recorded yet',
         message: 'Entries appear here as members and admins use the app.',
-        iconPaths: Icons.fileText,
+        illustration: 'noActivity',
       })));
       return;
     }

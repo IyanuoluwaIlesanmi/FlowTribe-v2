@@ -97,7 +97,7 @@ export default function AdminSubmissionsView() {
       return Card({}, EmptyState({
         title: 'No submissions match',
         message: 'Try clearing the filters, or pick a different week.',
-        iconPaths: Icons.inbox,
+        illustration: 'noResults',
       }));
     }
 
