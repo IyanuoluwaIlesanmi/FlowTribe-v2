@@ -190,7 +190,7 @@
 
       for (var c = 0; c < this._numColumns; c += 1) {
         var value = source[this._column + c - 1];
-        row.push(value === undefined ? '' : value);
+        row.push(value === undefined ? '' : stripLeadingApostrophe(value));
       }
 
       out.push(row);
@@ -220,6 +220,35 @@
 
   FakeRange.prototype.setValue = function (value) {
     return this.setValues([[value]]);
+  };
+
+  /**
+   * In Sheets a leading apostrophe is a FORMATTING MARKER, not data. It means
+   * "treat the rest as literal text", and getValue() returns the text without
+   * it. That is exactly what SheetClient.sanitise() relies on to defuse a
+   * formula-injection payload.
+   *
+   * The fake used to return the apostrophe as part of the string, so the smoke
+   * test's `charAt(0) === '='` check passed here and reported a FALSE FAILURE
+   * in production against a cell that was correctly inert.
+   */
+  function stripLeadingApostrophe(value) {
+    if (typeof value === 'string' && value.charAt(0) === "'") return value.slice(1);
+    return value;
+  }
+
+  /**
+   * Empty for literal text, the source for a real formula.
+   *
+   * A value written with the apostrophe escape is text, so it has no formula —
+   * which is the whole point of the escape, and the only thing that decides
+   * whether a payload can execute.
+   */
+  FakeRange.prototype.getFormula = function () {
+    var raw = (this._sheet._data[this._row - 1] || [])[this._column - 1];
+    if (typeof raw !== 'string') return '';
+    if (raw.charAt(0) === "'") return '';
+    return raw.charAt(0) === '=' ? raw : '';
   };
 
   // Most formatting is presentation only and nothing in the backend reads it

